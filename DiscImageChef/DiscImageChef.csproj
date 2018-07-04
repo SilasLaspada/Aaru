@@ -263,5 +263,6 @@
     <PackageReference Include="CommandLineParser" Version="2.2.1" />
     <PackageReference Include="System.ValueTuple" Version="4.4.0" />
     <PackageReference Include="Unclassified.NetRevisionTask" Version="0.2.2-beta" />
+    <PackageReference Include="WMZ.CommandAndConquer.CLI" Version="2.5.2" />
   </ItemGroup>
 </Project>
