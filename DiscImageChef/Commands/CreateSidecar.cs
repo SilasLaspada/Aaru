@@ -48,12 +48,12 @@ namespace DiscImageChef.Commands
     public static partial class Image
     {
         [CliCommand("create-sidecar", "Creates CICM Metadata XML sidecar.")]
-        public static void CreateSidecar([CliParameter('i', "Disc image.")] string InputFile, [CliParameter('t',
+        public static void CreateSidecar([CliParameter('i', "Disc image.")] string input, [CliParameter('t',
                                              "When used indicates that input is a folder containing alphabetically sorted files extracted from a linear block-based tape with fixed block size (e.g. a SCSI tape device).")]
-                                         bool Tape = false, [CliParameter('b',
+                                         bool tape = false, [CliParameter('b',
                                              "Only used for tapes, indicates block size. Files in the folder whose size is not a multiple of this value will simply be ignored.")]
-                                         int BlockSize = 512, [CliParameter('e', "Name of character encoding to use.")]
-                                         string EncodingName = null,
+                                         int blockSize = 512, [CliParameter('e', "Name of character encoding to use.")]
+                                         string encodingName = null,
                                          [CliParameter(                    'd', "Shows debug output from plugins.")]
                                          bool debug = false, [CliParameter('v', "Shows verbose output.")]
                                          bool verbose = false)
@@ -68,10 +68,10 @@ namespace DiscImageChef.Commands
 
             Encoding encoding = null;
 
-            if(EncodingName != null)
+            if(encodingName != null)
                 try
                 {
-                    encoding = Claunia.Encoding.Encoding.GetEncoding(EncodingName);
+                    encoding = Claunia.Encoding.Encoding.GetEncoding(encodingName);
                     if(verbose) DicConsole.VerboseWriteLine("Using encoding for {0}.", encoding.EncodingName);
                 }
                 catch(ArgumentException)
@@ -80,16 +80,16 @@ namespace DiscImageChef.Commands
                     return;
                 }
 
-            if(File.Exists(InputFile))
+            if(File.Exists(input))
             {
-                if(Tape)
+                if(tape)
                 {
                     DicConsole.ErrorWriteLine("You cannot use --tape option when input is a file.");
                     return;
                 }
 
                 FiltersList filtersList = new FiltersList();
-                IFilter     inputFilter = filtersList.GetFilter(InputFile);
+                IFilter     inputFilter = filtersList.GetFilter(input);
 
                 if(inputFilter == null)
                 {
@@ -130,23 +130,23 @@ namespace DiscImageChef.Commands
                         return;
                     }
 
-                    Core.Statistics.AddMediaFormat(imageFormat.Format);
-                    Core.Statistics.AddFilter(inputFilter.Name);
+                    Statistics.AddMediaFormat(imageFormat.Format);
+                    Statistics.AddFilter(inputFilter.Name);
 
-                    CICMMetadataType sidecar = Sidecar.Create(imageFormat, InputFile, inputFilter.Id, encoding);
+                    CICMMetadataType sidecar = Sidecar.Create(imageFormat, input, inputFilter.Id, encoding);
 
                     DicConsole.WriteLine("Writing metadata sidecar");
 
                     FileStream xmlFs =
                         new
-                            FileStream(Path.Combine(Path.GetDirectoryName(InputFile) ?? throw new InvalidOperationException(), Path.GetFileNameWithoutExtension(InputFile) + ".cicm.xml"),
+                            FileStream(Path.Combine(Path.GetDirectoryName(input) ?? throw new InvalidOperationException(), Path.GetFileNameWithoutExtension(input) + ".cicm.xml"),
                                        FileMode.CreateNew);
 
                     XmlSerializer xmlSer = new XmlSerializer(typeof(CICMMetadataType));
                     xmlSer.Serialize(xmlFs, sidecar);
                     xmlFs.Close();
 
-                    Core.Statistics.AddCommand("create-sidecar");
+                    Statistics.AddCommand("create-sidecar");
                 }
                 catch(Exception ex)
                 {
@@ -154,35 +154,33 @@ namespace DiscImageChef.Commands
                     DicConsole.DebugWriteLine("Analyze command", ex.StackTrace);
                 }
             }
-            else if(Directory.Exists(InputFile))
+            else if(Directory.Exists(input))
             {
-                if(!Tape)
+                if(!tape)
                 {
                     DicConsole.ErrorWriteLine("Cannot create a sidecar from a directory.");
                     return;
                 }
 
-                string[] contents = Directory.GetFiles(InputFile, "*", SearchOption.TopDirectoryOnly);
-                List<string> files = contents.Where(file => new FileInfo(file).Length % BlockSize == 0)
-                                             .ToList();
+                string[]     contents = Directory.GetFiles(input, "*", SearchOption.TopDirectoryOnly);
+                List<string> files    = contents.Where(file => new FileInfo(file).Length % blockSize == 0).ToList();
 
                 files.Sort(StringComparer.CurrentCultureIgnoreCase);
 
-                CICMMetadataType sidecar =
-                    Sidecar.Create(Path.GetFileName(InputFile), files, BlockSize);
+                CICMMetadataType sidecar = Sidecar.Create(Path.GetFileName(input), files, blockSize);
 
                 DicConsole.WriteLine("Writing metadata sidecar");
 
                 FileStream xmlFs =
                     new
-                        FileStream(Path.Combine(Path.GetDirectoryName(InputFile) ?? throw new InvalidOperationException(), Path.GetFileNameWithoutExtension(InputFile) + ".cicm.xml"),
+                        FileStream(Path.Combine(Path.GetDirectoryName(input) ?? throw new InvalidOperationException(), Path.GetFileNameWithoutExtension(input) + ".cicm.xml"),
                                    FileMode.CreateNew);
 
                 XmlSerializer xmlSer = new XmlSerializer(typeof(CICMMetadataType));
                 xmlSer.Serialize(xmlFs, sidecar);
                 xmlFs.Close();
 
-                Core.Statistics.AddCommand("create-sidecar");
+                Statistics.AddCommand("create-sidecar");
             }
             else DicConsole.ErrorWriteLine("The specified input file cannot be found.");
         }

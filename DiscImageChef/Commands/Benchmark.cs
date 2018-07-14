@@ -41,9 +41,9 @@ namespace DiscImageChef.Commands
     public static partial class About
     {
         [CliCommand("benchmark", "Benchmarks hashing and entropy calculation.")]
-        public static void Benchmark([CliParameter(                      'b', "Block size.")] int BlockSize = 512,
+        public static void Benchmark([CliParameter(                      'b', "Block size.")] int blockSize = 512,
                                      [CliParameter(                      's', "Buffer size in mebibytes.")]
-                                     int BufferSize = 128, [CliParameter('d', "Shows debug output from plugins.")]
+                                     int bufferSize = 128, [CliParameter('d', "Shows debug output from plugins.")]
                                      bool debug = false,   [CliParameter('v', "Shows verbose output.")]
                                      bool verbose = false)
         {
@@ -52,7 +52,7 @@ namespace DiscImageChef.Commands
             Core.Benchmark.UpdateProgressEvent += Progress.UpdateProgress;
             Core.Benchmark.EndProgressEvent    += Progress.EndProgress;
 
-            BenchmarkResults results = Core.Benchmark.Do(BufferSize * 1024 * 1024, BlockSize);
+            BenchmarkResults results = Core.Benchmark.Do(bufferSize * 1024 * 1024, blockSize);
 
             DicConsole.WriteLine("Took {0} seconds to fill buffer, {1:F3} MiB/sec.", results.FillTime,
                                  results.FillSpeed);

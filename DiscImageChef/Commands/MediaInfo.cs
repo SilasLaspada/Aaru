@@ -56,23 +56,22 @@ namespace DiscImageChef.Commands
     public static partial class Media
     {
         [CliCommand("info", "Gets information about the media inserted on a device.")]
-        public static void Info([CliParameter('i', "Device path.")] string DevicePath,
+        public static void Info([CliParameter('i', "Device path.")] string devicePath,
                                 [CliParameter('w',
                                     "Write binary responses from device with that prefix.")]
-                                string OutputPrefix = null, [CliParameter('d', "Shows debug output from plugins.")]
+                                string outputPrefix = null, [CliParameter('d', "Shows debug output from plugins.")]
                                 bool debug = false,         [CliParameter('v', "Shows verbose output.")]
                                 bool verbose = false)
         {
             DicConsole.DebugWriteLine("Media-Info command", "--debug={0}",         debug);
             DicConsole.DebugWriteLine("Media-Info command", "--verbose={0}",       verbose);
-            DicConsole.DebugWriteLine("Media-Info command", "--device={0}",        DevicePath);
-            DicConsole.DebugWriteLine("Media-Info command", "--output-prefix={0}", OutputPrefix);
+            DicConsole.DebugWriteLine("Media-Info command", "--device={0}",        devicePath);
+            DicConsole.DebugWriteLine("Media-Info command", "--output-prefix={0}", outputPrefix);
 
-            if(DevicePath.Length == 2 && DevicePath[1] == ':' && DevicePath[0] != '/' &&
-               char.IsLetter(DevicePath[0]))
-                DevicePath = "\\\\.\\" + char.ToUpper(DevicePath[0]) + ':';
+            if(devicePath.Length == 2 && devicePath[1] == ':' && devicePath[0] != '/' && char.IsLetter(devicePath[0]))
+                devicePath = "\\\\.\\" + char.ToUpper(devicePath[0]) + ':';
 
-            DiscImageChef.Devices.Device dev = new DiscImageChef.Devices.Device(DevicePath);
+            Devices.Device dev = new Devices.Device(devicePath);
 
             if(dev.Error)
             {
@@ -80,7 +79,7 @@ namespace DiscImageChef.Commands
                 return;
             }
 
-            Core.Statistics.AddDevice(dev);
+            Statistics.AddDevice(dev);
 
             switch(dev.Type)
             {
@@ -92,16 +91,16 @@ namespace DiscImageChef.Commands
                     DoSdMediaInfo();
                     break;
                 case DeviceType.NVMe:
-                    DoNvmeMediaInfo(OutputPrefix, dev);
+                    DoNvmeMediaInfo(outputPrefix, dev);
                     break;
                 case DeviceType.ATAPI:
                 case DeviceType.SCSI:
-                    DoScsiMediaInfo(OutputPrefix, dev);
+                    DoScsiMediaInfo(outputPrefix, dev);
                     break;
                 default: throw new NotSupportedException("Unknown device type.");
             }
 
-            Core.Statistics.AddCommand("media-info");
+            Statistics.AddCommand("media-info");
         }
 
         static void DoAtaMediaInfo()
@@ -109,7 +108,7 @@ namespace DiscImageChef.Commands
             DicConsole.ErrorWriteLine("Please use device-info command for ATA devices.");
         }
 
-        static void DoNvmeMediaInfo(string outputPrefix, DiscImageChef.Devices.Device dev)
+        static void DoNvmeMediaInfo(string outputPrefix, Devices.Device dev)
         {
             throw new NotImplementedException("NVMe devices not yet supported.");
         }
@@ -119,7 +118,7 @@ namespace DiscImageChef.Commands
             DicConsole.ErrorWriteLine("Please use device-info command for MMC/SD devices.");
         }
 
-        static void DoScsiMediaInfo(string outputPrefix, DiscImageChef.Devices.Device dev)
+        static void DoScsiMediaInfo(string outputPrefix, Devices.Device dev)
         {
             byte[]    cmdBuf;
             byte[]    senseBuf;
@@ -1414,7 +1413,7 @@ namespace DiscImageChef.Commands
             if(dskType == MediaType.Unknown && dev.IsUsb && containsFloppyPage) dskType = MediaType.FlashDrive;
 
             DicConsole.WriteLine("Media identified as {0}", dskType);
-            Core.Statistics.AddMedia(dskType, true);
+            Statistics.AddMedia(dskType, true);
 
             sense = dev.ReadMediaSerialNumber(out cmdBuf, out senseBuf, dev.Timeout, out _);
             if(sense)

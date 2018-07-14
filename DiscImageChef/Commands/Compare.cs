@@ -40,26 +40,27 @@ using DiscImageChef.CommonTypes.Interfaces;
 using DiscImageChef.CommonTypes.Structs;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
+using ImageInfo = DiscImageChef.CommonTypes.Structs.ImageInfo;
 
 namespace DiscImageChef.Commands
 {
     public static partial class Image
     {
         [CliCommand("compare", "Compares two disc images.")]
-        public static void Compare([CliParameter(                             'i', "First disc image.")] string InputFile1,
-                                   [CliParameter('n', "Second disc image.")] string InputFile2,
-                                    bool debug = false,       [CliParameter('v', "Shows verbose output.")]
-                                    bool verbose = false)
+        public static void Compare([CliParameter(                                       'i', "First disc image.")]
+                                   string inputFile1, [CliParameter(                    'n', "Second disc image.")]
+                                   string inputFile2, bool debug = false, [CliParameter('v', "Shows verbose output.")]
+                                   bool verbose = false)
         {
             DicConsole.DebugWriteLine("Compare command", "--debug={0}",   debug);
             DicConsole.DebugWriteLine("Compare command", "--verbose={0}", verbose);
-            DicConsole.DebugWriteLine("Compare command", "--input1={0}",  InputFile1);
-            DicConsole.DebugWriteLine("Compare command", "--input2={0}",  InputFile2);
+            DicConsole.DebugWriteLine("Compare command", "--input1={0}",  inputFile1);
+            DicConsole.DebugWriteLine("Compare command", "--input2={0}",  inputFile2);
 
             FiltersList filtersList  = new FiltersList();
-            IFilter     inputFilter1 = filtersList.GetFilter(InputFile1);
+            IFilter     inputFilter1 = filtersList.GetFilter(inputFile1);
             filtersList = new FiltersList();
-            IFilter inputFilter2 = filtersList.GetFilter(InputFile2);
+            IFilter inputFilter2 = filtersList.GetFilter(inputFile2);
 
             if(inputFilter1 == null)
             {
@@ -101,12 +102,12 @@ namespace DiscImageChef.Commands
             input1Format.Open(inputFilter1);
             input2Format.Open(inputFilter2);
 
-            Core.Statistics.AddMediaFormat(input1Format.Format);
-            Core.Statistics.AddMediaFormat(input2Format.Format);
-            Core.Statistics.AddMedia(input1Format.Info.MediaType, false);
-            Core.Statistics.AddMedia(input2Format.Info.MediaType, false);
-            Core.Statistics.AddFilter(inputFilter1.Name);
-            Core.Statistics.AddFilter(inputFilter2.Name);
+            Statistics.AddMediaFormat(input1Format.Format);
+            Statistics.AddMediaFormat(input2Format.Format);
+            Statistics.AddMedia(input1Format.Info.MediaType, false);
+            Statistics.AddMedia(input2Format.Info.MediaType, false);
+            Statistics.AddFilter(inputFilter1.Name);
+            Statistics.AddFilter(inputFilter2.Name);
 
             StringBuilder sb = new StringBuilder();
 
@@ -114,19 +115,19 @@ namespace DiscImageChef.Commands
             {
                 sb.AppendLine("\tDisc image 1\tDisc image 2");
                 sb.AppendLine("================================");
-                sb.AppendFormat("File\t{0}\t{1}", InputFile1, InputFile2).AppendLine();
+                sb.AppendFormat("File\t{0}\t{1}", inputFile1, inputFile2).AppendLine();
                 sb.AppendFormat("Disc image format\t{0}\t{1}", input1Format.Name, input2Format.Name).AppendLine();
             }
             else
             {
-                sb.AppendFormat("Disc image 1: {0}", InputFile1).AppendLine();
-                sb.AppendFormat("Disc image 2: {0}", InputFile2).AppendLine();
+                sb.AppendFormat("Disc image 1: {0}", inputFile1).AppendLine();
+                sb.AppendFormat("Disc image 2: {0}", inputFile2).AppendLine();
             }
 
             bool imagesDiffer = false;
 
-            CommonTypes.Structs.ImageInfo    image1Info     = new CommonTypes.Structs.ImageInfo();
-            CommonTypes.Structs.ImageInfo    image2Info     = new CommonTypes.Structs.ImageInfo();
+            ImageInfo                        image1Info     = new ImageInfo();
+            ImageInfo                        image2Info     = new ImageInfo();
             List<Session>                    image1Sessions = new List<Session>();
             List<Session>                    image2Sessions = new List<Session>();
             Dictionary<MediaTagType, byte[]> image1DiskTags = new Dictionary<MediaTagType, byte[]>();
@@ -476,7 +477,7 @@ namespace DiscImageChef.Commands
 
             DicConsole.WriteLine(sb.ToString());
 
-            Core.Statistics.AddCommand("compare");
+            Statistics.AddCommand("compare");
         }
     }
 }

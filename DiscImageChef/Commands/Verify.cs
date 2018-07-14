@@ -44,21 +44,21 @@ namespace DiscImageChef.Commands
     public static partial class Image
     {
         [CliCommand("verify", "Verifies a disc image integrity, and if supported, sector integrity.")]
-        public static void Verify([CliParameter(                           'i', "Disc image.")] string InputFile,
+        public static void Verify([CliParameter(                           'i', "Disc image.")] string input,
                                   [CliParameter(                           'w', "Verify disc image if supported.")]
-                                  bool VerifyDisc = true,    [CliParameter('s', "Verify all sectors if supported.")]
-                                  bool VerifySectors = true, [CliParameter('d', "Shows debug output from plugins.")]
+                                  bool verifyDisc = true,    [CliParameter('s', "Verify all sectors if supported.")]
+                                  bool verifySectors = true, [CliParameter('d', "Shows debug output from plugins.")]
                                   bool debug = false,        [CliParameter('v', "Shows verbose output.")]
                                   bool verbose = false)
         {
             DicConsole.DebugWriteLine("Verify command", "--debug={0}",          debug);
             DicConsole.DebugWriteLine("Verify command", "--verbose={0}",        verbose);
-            DicConsole.DebugWriteLine("Verify command", "--input={0}",          InputFile);
-            DicConsole.DebugWriteLine("Verify command", "--verify-disc={0}",    VerifyDisc);
-            DicConsole.DebugWriteLine("Verify command", "--verify-sectors={0}", VerifySectors);
+            DicConsole.DebugWriteLine("Verify command", "--input={0}",          input);
+            DicConsole.DebugWriteLine("Verify command", "--verify-disc={0}",    verifyDisc);
+            DicConsole.DebugWriteLine("Verify command", "--verify-sectors={0}", verifySectors);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(input);
 
             if(inputFilter == null)
             {
@@ -75,9 +75,9 @@ namespace DiscImageChef.Commands
             }
 
             inputFormat.Open(inputFilter);
-            Core.Statistics.AddMediaFormat(inputFormat.Format);
-            Core.Statistics.AddMedia(inputFormat.Info.MediaType, false);
-            Core.Statistics.AddFilter(inputFilter.Name);
+            Statistics.AddMediaFormat(inputFormat.Format);
+            Statistics.AddMedia(inputFormat.Info.MediaType, false);
+            Statistics.AddFilter(inputFilter.Name);
 
             bool? correctDisc    = null;
             long  totalSectors   = 0;
@@ -85,7 +85,7 @@ namespace DiscImageChef.Commands
             long  correctSectors = 0;
             long  unknownSectors = 0;
 
-            if(VerifyDisc)
+            if(verifyDisc)
             {
                 DateTime startCheck      = DateTime.UtcNow;
                 bool?    discCheckStatus = inputFormat.VerifyMediaImage();
@@ -110,7 +110,7 @@ namespace DiscImageChef.Commands
                 DicConsole.VerboseWriteLine("Checking disc image checksums took {0} seconds", checkTime.TotalSeconds);
             }
 
-            if(VerifySectors)
+            if(verifySectors)
             {
                 bool formatHasTracks;
                 try
@@ -250,8 +250,8 @@ namespace DiscImageChef.Commands
                 correctSectors = totalSectors - errorSectors - unknownSectors;
             }
 
-            Core.Statistics.AddCommand("verify");
-            Core.Statistics.AddVerify(correctDisc, correctSectors, errorSectors, unknownSectors, totalSectors);
+            Statistics.AddCommand("verify");
+            Statistics.AddVerify(correctDisc, correctSectors, errorSectors, unknownSectors, totalSectors);
         }
     }
 }

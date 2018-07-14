@@ -34,6 +34,7 @@ using System;
 using System.IO;
 using System.Xml.Serialization;
 using CommandAndConquer.CLI.Attributes;
+using DiscImageChef.CommonTypes.Metadata;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
 using DiscImageChef.Core.Devices.Report;
@@ -45,20 +46,19 @@ namespace DiscImageChef.Commands
     public static partial class Device
     {
         [CliCommand("report", "Tests the device capabilities and creates an XML report of them.")]
-        public static void Info([CliParameter(                    'i', "Device path.")] string DevicePath,
+        public static void Info([CliParameter(                    'i', "Device path.")] string devicePath,
                                 [CliParameter(                    'd', "Shows debug output from plugins.")]
                                 bool debug = false, [CliParameter('v', "Shows verbose output.")]
                                 bool verbose = false)
         {
             DicConsole.DebugWriteLine("Device-Report command", "--debug={0}",   debug);
             DicConsole.DebugWriteLine("Device-Report command", "--verbose={0}", verbose);
-            DicConsole.DebugWriteLine("Device-Report command", "--device={0}",  DevicePath);
+            DicConsole.DebugWriteLine("Device-Report command", "--device={0}",  devicePath);
 
-            if(DevicePath.Length == 2 && DevicePath[1] == ':' && DevicePath[0] != '/' &&
-               char.IsLetter(DevicePath[0]))
-                DevicePath = "\\\\.\\" + char.ToUpper(DevicePath[0]) + ':';
+            if(devicePath.Length == 2 && devicePath[1] == ':' && devicePath[0] != '/' && char.IsLetter(devicePath[0]))
+                devicePath = "\\\\.\\" + char.ToUpper(devicePath[0]) + ':';
 
-            DiscImageChef.Devices.Device dev = new DiscImageChef.Devices.Device(DevicePath);
+            Devices.Device dev = new Devices.Device(devicePath);
 
             if(dev.Error)
             {
@@ -66,11 +66,11 @@ namespace DiscImageChef.Commands
                 return;
             }
 
-            Core.Statistics.AddDevice(dev);
+            Statistics.AddDevice(dev);
 
-            CommonTypes.Metadata.DeviceReport report    = new CommonTypes.Metadata.DeviceReport();
-            bool                              removable = false;
-            string                            xmlFile;
+            DeviceReport report    = new DeviceReport();
+            bool         removable = false;
+            string       xmlFile;
             if(!string.IsNullOrWhiteSpace(dev.Manufacturer) && !string.IsNullOrWhiteSpace(dev.Revision))
                 xmlFile =
                     dev.Manufacturer + "_" + dev.Model + "_" + dev.Revision + ".xml";
@@ -105,10 +105,10 @@ namespace DiscImageChef.Commands
 
             FileStream xmlFs = new FileStream(xmlFile, FileMode.Create);
 
-            XmlSerializer xmlSer = new XmlSerializer(typeof(CommonTypes.Metadata.DeviceReport));
+            XmlSerializer xmlSer = new XmlSerializer(typeof(DeviceReport));
             xmlSer.Serialize(xmlFs, report);
             xmlFs.Close();
-            Core.Statistics.AddCommand("device-report");
+            Statistics.AddCommand("device-report");
 
             if(Settings.Settings.Current.ShareReports) Remote.SubmitReport(report);
         }

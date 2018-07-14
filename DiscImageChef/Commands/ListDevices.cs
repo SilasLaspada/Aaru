@@ -33,6 +33,7 @@
 using System.Linq;
 using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.Console;
+using DiscImageChef.Core;
 using DiscImageChef.Devices;
 
 namespace DiscImageChef.Commands
@@ -47,7 +48,7 @@ namespace DiscImageChef.Commands
             DicConsole.DebugWriteLine("Media-Info command", "--debug={0}",   debug);
             DicConsole.DebugWriteLine("Media-Info command", "--verbose={0}", verbose);
 
-            Devices.DeviceInfo[] devices = DiscImageChef.Devices.Device.ListDevices();
+            DeviceInfo[] devices = Devices.Device.ListDevices();
 
             if(devices == null || devices.Length == 0) DicConsole.WriteLine("No known devices attached.");
             else
@@ -59,12 +60,12 @@ namespace DiscImageChef.Commands
                 DicConsole.WriteLine("{0,-22}+{1,-16}+{2,-24}+{3,-24}+{4,-10}+{5,-10}", "----------------------",
                                      "----------------", "------------------------", "------------------------",
                                      "----------", "----------");
-                foreach(Devices.DeviceInfo dev in devices)
+                foreach(DeviceInfo dev in devices)
                     DicConsole.WriteLine("{0,-22}|{1,-16}|{2,-24}|{3,-24}|{4,-10}|{5,-10}", dev.Path, dev.Vendor,
                                          dev.Model, dev.Serial, dev.Bus, dev.Supported);
             }
 
-            Core.Statistics.AddCommand("list-devices");
+            Statistics.AddCommand("list-devices");
         }
     }
 }

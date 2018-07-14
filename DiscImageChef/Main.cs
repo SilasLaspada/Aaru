@@ -35,8 +35,8 @@ using System.Reflection;
 using CommandAndConquer.CLI.Core;
 using DiscImageChef.Commands;
 using DiscImageChef.Console;
+using DiscImageChef.Core;
 using DiscImageChef.Settings;
-using Statistics = DiscImageChef.Core.Statistics;
 
 namespace DiscImageChef
 {

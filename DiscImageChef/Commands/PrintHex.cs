@@ -41,25 +41,25 @@ namespace DiscImageChef.Commands
     public static partial class Image
     {
         [CliCommand("printhex", "Prints a sector, in hexadecimal values, to the console.")]
-        public static void PrintHex([CliParameter(                          'i', "Disc image.")]   string InputFile,
-                                    [CliParameter(                          's', "Start sector.")] ulong  StartSector,
+        public static void PrintHex([CliParameter(                          'i', "Disc image.")]   string input,
+                                    [CliParameter(                          's', "Start sector.")] ulong  startSector,
                                     [CliParameter(                          'l', "How many sectors to print.")]
-                                    ulong Length = 1,         [CliParameter('r', "Print sectors with tags included.")]
-                                    bool LongSectors = false, [CliParameter('w', "How many bytes to print per line.")]
-                                    ushort WidthBytes = 32,   [CliParameter('d', "Shows debug output from plugins.")]
+                                    ulong length = 1,         [CliParameter('r', "Print sectors with tags included.")]
+                                    bool longSectors = false, [CliParameter('w', "How many bytes to print per line.")]
+                                    ushort widthBytes = 32,   [CliParameter('d', "Shows debug output from plugins.")]
                                     bool debug = false,       [CliParameter('v', "Shows verbose output.")]
                                     bool verbose = false)
         {
             DicConsole.DebugWriteLine("PrintHex command", "--debug={0}",        debug);
             DicConsole.DebugWriteLine("PrintHex command", "--verbose={0}",      verbose);
-            DicConsole.DebugWriteLine("PrintHex command", "--input={0}",        InputFile);
-            DicConsole.DebugWriteLine("PrintHex command", "--start={0}",        StartSector);
-            DicConsole.DebugWriteLine("PrintHex command", "--length={0}",       Length);
-            DicConsole.DebugWriteLine("PrintHex command", "--long-sectors={0}", LongSectors);
-            DicConsole.DebugWriteLine("PrintHex command", "--WidthBytes={0}",   WidthBytes);
+            DicConsole.DebugWriteLine("PrintHex command", "--input={0}",        input);
+            DicConsole.DebugWriteLine("PrintHex command", "--start={0}",        startSector);
+            DicConsole.DebugWriteLine("PrintHex command", "--length={0}",       length);
+            DicConsole.DebugWriteLine("PrintHex command", "--long-sectors={0}", longSectors);
+            DicConsole.DebugWriteLine("PrintHex command", "--WidthBytes={0}",   widthBytes);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(input);
 
             if(inputFilter == null)
             {
@@ -77,15 +77,15 @@ namespace DiscImageChef.Commands
 
             inputFormat.Open(inputFilter);
 
-            for(ulong i = 0; i < Length; i++)
+            for(ulong i = 0; i < length; i++)
             {
-                DicConsole.WriteLine("Sector {0}", StartSector + i);
+                DicConsole.WriteLine("Sector {0}", startSector + i);
 
                 if(inputFormat.Info.ReadableSectorTags == null)
                 {
                     DicConsole
                        .WriteLine("Requested sectors with tags, unsupported by underlying image format, printing only user data.");
-                    LongSectors = false;
+                    longSectors = false;
                 }
                 else
                 {
@@ -93,18 +93,18 @@ namespace DiscImageChef.Commands
                     {
                         DicConsole
                            .WriteLine("Requested sectors with tags, unsupported by underlying image format, printing only user data.");
-                        LongSectors = false;
+                        longSectors = false;
                     }
                 }
 
-                byte[] sector = LongSectors
-                                    ? inputFormat.ReadSectorLong(StartSector + i)
-                                    : inputFormat.ReadSector(StartSector     + i);
+                byte[] sector = longSectors
+                                    ? inputFormat.ReadSectorLong(startSector + i)
+                                    : inputFormat.ReadSector(startSector     + i);
 
-                DiscImageChef.PrintHex.PrintHexArray(sector, WidthBytes);
+                DiscImageChef.PrintHex.PrintHexArray(sector, widthBytes);
             }
 
-            Core.Statistics.AddCommand("print-hex");
+            Statistics.AddCommand("print-hex");
         }
     }
 }

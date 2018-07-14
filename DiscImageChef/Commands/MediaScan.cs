@@ -33,6 +33,7 @@
 using System;
 using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.Console;
+using DiscImageChef.Core;
 using DiscImageChef.Core.Devices.Scanning;
 using DiscImageChef.Devices;
 
@@ -41,26 +42,25 @@ namespace DiscImageChef.Commands
     public static partial class Media
     {
         [CliCommand("scan", "Scans the media inserted on a device.")]
-        public static void Scan([CliParameter('i', "Device path.")] string DevicePath,
+        public static void Scan([CliParameter('i', "Device path.")] string devicePath,
                                 [CliParameter('m',
                                     "Write a log of the scan in the format used by MHDD.")]
-                                string MhddLogPath = null, [CliParameter('b',
+                                string mhddLogPath = null, [CliParameter('b',
                                     "Write a log of the scan in the format used by ImgBurn.")]
-                                string IbgLogPath = null, [CliParameter('d', "Shows debug output from plugins.")]
+                                string ibgLogPath = null, [CliParameter('d', "Shows debug output from plugins.")]
                                 bool debug = false,       [CliParameter('v', "Shows verbose output.")]
                                 bool verbose = false)
         {
             DicConsole.DebugWriteLine("Media-Scan command", "--debug={0}",    debug);
             DicConsole.DebugWriteLine("Media-Scan command", "--verbose={0}",  verbose);
-            DicConsole.DebugWriteLine("Media-Scan command", "--device={0}",   DevicePath);
-            DicConsole.DebugWriteLine("Media-Scan command", "--mhdd-log={0}", MhddLogPath);
-            DicConsole.DebugWriteLine("Media-Scan command", "--ibg-log={0}",  IbgLogPath);
+            DicConsole.DebugWriteLine("Media-Scan command", "--device={0}",   devicePath);
+            DicConsole.DebugWriteLine("Media-Scan command", "--mhdd-log={0}", mhddLogPath);
+            DicConsole.DebugWriteLine("Media-Scan command", "--ibg-log={0}",  ibgLogPath);
 
-            if(DevicePath.Length == 2 && DevicePath[1] == ':' && DevicePath[0] != '/' &&
-               char.IsLetter(DevicePath[0]))
-                DevicePath = "\\\\.\\" + char.ToUpper(DevicePath[0]) + ':';
+            if(devicePath.Length == 2 && devicePath[1] == ':' && devicePath[0] != '/' && char.IsLetter(devicePath[0]))
+                devicePath = "\\\\.\\" + char.ToUpper(devicePath[0]) + ':';
 
-            DiscImageChef.Devices.Device dev = new DiscImageChef.Devices.Device(DevicePath);
+            Devices.Device dev = new Devices.Device(devicePath);
 
             if(dev.Error)
             {
@@ -68,25 +68,25 @@ namespace DiscImageChef.Commands
                 return;
             }
 
-            Core.Statistics.AddDevice(dev);
+            Statistics.AddDevice(dev);
 
             ScanResults results;
 
             switch(dev.Type)
             {
                 case DeviceType.ATA:
-                    results = Ata.Scan(MhddLogPath, IbgLogPath, DevicePath, dev);
+                    results = Ata.Scan(mhddLogPath, ibgLogPath, devicePath, dev);
                     break;
                 case DeviceType.MMC:
                 case DeviceType.SecureDigital:
-                    results = SecureDigital.Scan(MhddLogPath, IbgLogPath, DevicePath, dev);
+                    results = SecureDigital.Scan(mhddLogPath, ibgLogPath, devicePath, dev);
                     break;
                 case DeviceType.NVMe:
-                    results = Nvme.Scan(MhddLogPath, IbgLogPath, DevicePath, dev);
+                    results = Nvme.Scan(mhddLogPath, ibgLogPath, devicePath, dev);
                     break;
                 case DeviceType.ATAPI:
                 case DeviceType.SCSI:
-                    results = Scsi.Scan(MhddLogPath, IbgLogPath, DevicePath, dev);
+                    results = Scsi.Scan(mhddLogPath, ibgLogPath, devicePath, dev);
                     break;
                 default: throw new NotSupportedException("Unknown device type.");
             }
@@ -117,10 +117,10 @@ namespace DiscImageChef.Commands
                 DicConsole.WriteLine("Testing {0} seeks, longest seek took {1:F3} ms, fastest one took {2:F3} ms. ({3:F3} ms average)",
                                      results.SeekTimes, results.SeekMax, results.SeekMin, results.SeekTotal / 1000);
 
-            Core.Statistics.AddMediaScan((long)results.A, (long)results.B, (long)results.C, (long)results.D,
-                                         (long)results.E, (long)results.F, (long)results.Blocks, (long)results.Errored,
-                                         (long)(results.Blocks - results.Errored));
-            Core.Statistics.AddCommand("media-scan");
+            Statistics.AddMediaScan((long)results.A, (long)results.B, (long)results.C, (long)results.D, (long)results.E,
+                                    (long)results.F, (long)results.Blocks, (long)results.Errored,
+                                    (long)(results.Blocks - results.Errored));
+            Statistics.AddCommand("media-scan");
         }
     }
 }

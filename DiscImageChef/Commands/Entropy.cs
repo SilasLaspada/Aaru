@@ -46,26 +46,26 @@ namespace DiscImageChef.Commands
     public static partial class Image
     {
         [CliCommand("entropy", "Calculates entropy and/or duplicated sectors of an image.")]
-        public static void Entropy([CliParameter('i', "Disc image.")] string InputFile,
+        public static void Entropy([CliParameter('i', "Disc image.")] string input,
                                    [CliParameter('p',
                                        "Calculates how many sectors are duplicated (have same exact data in user area).")]
-                                   bool DuplicatedSectors = true,
+                                   bool duplicatedSectors = true,
                                    [CliParameter('t', "Calculates entropy for each track separately.")]
-                                   bool SeparatedTracks = true,
+                                   bool separatedTracks = true,
                                    [CliParameter(                       'w', "Calculates entropy for  the whole disc.")]
-                                   bool WholeDisc = true, [CliParameter('d', "Shows debug output from plugins.")]
+                                   bool wholeDisc = true, [CliParameter('d', "Shows debug output from plugins.")]
                                    bool debug = false,    [CliParameter('v', "Shows verbose output.")]
                                    bool verbose = false)
         {
             DicConsole.DebugWriteLine("Entropy command", "--debug={0}",              debug);
             DicConsole.DebugWriteLine("Entropy command", "--verbose={0}",            verbose);
-            DicConsole.DebugWriteLine("Entropy command", "--separated-tracks={0}",   SeparatedTracks);
-            DicConsole.DebugWriteLine("Entropy command", "--whole-disc={0}",         WholeDisc);
-            DicConsole.DebugWriteLine("Entropy command", "--input={0}",              InputFile);
-            DicConsole.DebugWriteLine("Entropy command", "--duplicated-sectors={0}", DuplicatedSectors);
+            DicConsole.DebugWriteLine("Entropy command", "--separated-tracks={0}",   separatedTracks);
+            DicConsole.DebugWriteLine("Entropy command", "--whole-disc={0}",         wholeDisc);
+            DicConsole.DebugWriteLine("Entropy command", "--input={0}",              input);
+            DicConsole.DebugWriteLine("Entropy command", "--duplicated-sectors={0}", duplicatedSectors);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(input);
 
             if(inputFilter == null)
             {
@@ -82,14 +82,14 @@ namespace DiscImageChef.Commands
             }
 
             inputFormat.Open(inputFilter);
-            Core.Statistics.AddMediaFormat(inputFormat.Format);
-            Core.Statistics.AddMedia(inputFormat.Info.MediaType, false);
-            Core.Statistics.AddFilter(inputFilter.Name);
+            Statistics.AddMediaFormat(inputFormat.Format);
+            Statistics.AddMedia(inputFormat.Info.MediaType, false);
+            Statistics.AddFilter(inputFilter.Name);
             double  entropy = 0;
             ulong[] entTable;
             ulong   sectors;
 
-            if(SeparatedTracks)
+            if(separatedTracks)
                 try
                 {
                     List<Track> inputTracks = inputFormat.Tracks;
@@ -108,7 +108,7 @@ namespace DiscImageChef.Commands
                             DicConsole.Write("\rEntropying sector {0} of track {1}", i + 1, currentTrack.TrackSequence);
                             byte[] sector = inputFormat.ReadSector(i, currentTrack.TrackSequence);
 
-                            if(DuplicatedSectors)
+                            if(duplicatedSectors)
                             {
                                 string sectorHash = Sha1Context.Data(sector, out _);
                                 if(!uniqueSectorsPerTrack.Contains(sectorHash)) uniqueSectorsPerTrack.Add(sectorHash);
@@ -124,7 +124,7 @@ namespace DiscImageChef.Commands
 
                         DicConsole.WriteLine("Entropy for track {0} is {1:F4}.", currentTrack.TrackSequence, entropy);
 
-                        if(DuplicatedSectors)
+                        if(duplicatedSectors)
                             DicConsole.WriteLine("Track {0} has {1} unique sectors ({1:P3})",
                                                  currentTrack.TrackSequence, uniqueSectorsPerTrack.Count,
                                                  (double)uniqueSectorsPerTrack.Count / (double)sectors);
@@ -138,7 +138,7 @@ namespace DiscImageChef.Commands
                     else DicConsole.ErrorWriteLine("Unable to get separate tracks, not calculating their entropy");
                 }
 
-            if(!WholeDisc) return;
+            if(!wholeDisc) return;
 
             entTable = new ulong[256];
             ulong        diskSize      = 0;
@@ -152,7 +152,7 @@ namespace DiscImageChef.Commands
                 DicConsole.Write("\rEntropying sector {0}", i + 1);
                 byte[] sector = inputFormat.ReadSector(i);
 
-                if(DuplicatedSectors)
+                if(duplicatedSectors)
                 {
                     string sectorHash = Sha1Context.Data(sector, out _);
                     if(!uniqueSectors.Contains(sectorHash)) uniqueSectors.Add(sectorHash);
@@ -170,11 +170,11 @@ namespace DiscImageChef.Commands
 
             DicConsole.WriteLine("Entropy for disk is {0:F4}.", entropy);
 
-            if(DuplicatedSectors)
+            if(duplicatedSectors)
                 DicConsole.WriteLine("Disk has {0} unique sectors ({1:P3})", uniqueSectors.Count,
                                      (double)uniqueSectors.Count / (double)sectors);
 
-            Core.Statistics.AddCommand("entropy");
+            Statistics.AddCommand("entropy");
         }
     }
 }

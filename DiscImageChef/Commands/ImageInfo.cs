@@ -42,17 +42,17 @@ namespace DiscImageChef.Commands
     public static partial class Image
     {
         [CliCommand("info", "Opens a media image and shows information about the media it represents and metadata.")]
-        public static void Info([CliParameter(                    'i', "Media image.")] string InputFile,
+        public static void Info([CliParameter(                    'i', "Media image.")] string input,
                                 [CliParameter(                    'd', "Shows debug output from plugins.")]
                                 bool debug = false, [CliParameter('v', "Shows verbose output.")]
                                 bool verbose = false)
         {
             DicConsole.DebugWriteLine("Analyze command", "--debug={0}",   debug);
             DicConsole.DebugWriteLine("Analyze command", "--verbose={0}", verbose);
-            DicConsole.DebugWriteLine("Analyze command", "--input={0}",   InputFile);
+            DicConsole.DebugWriteLine("Analyze command", "--input={0}",   input);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(input);
 
             if(inputFilter == null)
             {
@@ -82,11 +82,11 @@ namespace DiscImageChef.Commands
                         return;
                     }
 
-                    Core.ImageInfo.PrintImageInfo(imageFormat);
+                    ImageInfo.PrintImageInfo(imageFormat);
 
-                    Core.Statistics.AddMediaFormat(imageFormat.Format);
-                    Core.Statistics.AddMedia(imageFormat.Info.MediaType, false);
-                    Core.Statistics.AddFilter(inputFilter.Name);
+                    Statistics.AddMediaFormat(imageFormat.Format);
+                    Statistics.AddMedia(imageFormat.Info.MediaType, false);
+                    Statistics.AddFilter(inputFilter.Name);
                 }
                 catch(Exception ex)
                 {
@@ -101,7 +101,7 @@ namespace DiscImageChef.Commands
                 DicConsole.DebugWriteLine("Image-info command", ex.StackTrace);
             }
 
-            Core.Statistics.AddCommand("image-info");
+            Statistics.AddCommand("image-info");
         }
     }
 }

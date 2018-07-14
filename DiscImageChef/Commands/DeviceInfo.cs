@@ -48,23 +48,22 @@ namespace DiscImageChef.Commands
     public static partial class Device
     {
         [CliCommand("info", "Gets information about a device.")]
-        public static void Info([CliParameter('i', "Device path.")] string DevicePath,
+        public static void Info([CliParameter('i', "Device path.")] string devicePath,
                                 [CliParameter('w',
                                     "Write binary responses from device with that prefix.")]
-                                string OutputPrefix = null, [CliParameter('d', "Shows debug output from plugins.")]
+                                string outputPrefix = null, [CliParameter('d', "Shows debug output from plugins.")]
                                 bool debug = false,         [CliParameter('v', "Shows verbose output.")]
                                 bool verbose = false)
         {
             DicConsole.DebugWriteLine("Device-Info command", "--debug={0}",         debug);
             DicConsole.DebugWriteLine("Device-Info command", "--verbose={0}",       verbose);
-            DicConsole.DebugWriteLine("Device-Info command", "--device={0}",        DevicePath);
-            DicConsole.DebugWriteLine("Device-Info command", "--output-prefix={0}", OutputPrefix);
+            DicConsole.DebugWriteLine("Device-Info command", "--device={0}",        devicePath);
+            DicConsole.DebugWriteLine("Device-Info command", "--output-prefix={0}", outputPrefix);
 
-            if(DevicePath.Length == 2 && DevicePath[1] == ':' && DevicePath[0] != '/' &&
-               char.IsLetter(DevicePath[0]))
-                DevicePath = "\\\\.\\" + char.ToUpper(DevicePath[0]) + ':';
+            if(devicePath.Length == 2 && devicePath[1] == ':' && devicePath[0] != '/' && char.IsLetter(devicePath[0]))
+                devicePath = "\\\\.\\" + char.ToUpper(devicePath[0]) + ':';
 
-            DiscImageChef.Devices.Device dev = new DiscImageChef.Devices.Device(DevicePath);
+            Devices.Device dev = new Devices.Device(devicePath);
 
             if(dev.Error)
             {
@@ -72,7 +71,7 @@ namespace DiscImageChef.Commands
                 return;
             }
 
-            Core.Statistics.AddDevice(dev);
+            Statistics.AddDevice(dev);
 
             if(dev.IsUsb)
             {
@@ -187,8 +186,7 @@ namespace DiscImageChef.Commands
                         break;
                     }
 
-                    DataFile.WriteTo("Device-Info command", OutputPrefix, "_ata_identify.bin", "ATA IDENTIFY",
-                                     ataBuf);
+                    DataFile.WriteTo("Device-Info command", outputPrefix, "_ata_identify.bin", "ATA IDENTIFY", ataBuf);
 
                     DicConsole.WriteLine(Identify.Prettify(ataBuf));
 
@@ -251,8 +249,8 @@ namespace DiscImageChef.Commands
                         break;
                     }
 
-                    DataFile.WriteTo("Device-Info command", OutputPrefix, "_atapi_identify.bin",
-                                     "ATAPI IDENTIFY", ataBuf);
+                    DataFile.WriteTo("Device-Info command", outputPrefix, "_atapi_identify.bin", "ATAPI IDENTIFY",
+                                     ataBuf);
 
                     DicConsole.WriteLine(Identify.Prettify(ataBuf));
 
@@ -272,8 +270,7 @@ namespace DiscImageChef.Commands
 
                     if(dev.Type != DeviceType.ATAPI) DicConsole.WriteLine("SCSI device");
 
-                    DataFile.WriteTo("Device-Info command", OutputPrefix, "_scsi_inquiry.bin", "SCSI INQUIRY",
-                                     inqBuf);
+                    DataFile.WriteTo("Device-Info command", outputPrefix, "_scsi_inquiry.bin", "SCSI INQUIRY", inqBuf);
 
                     Inquiry.SCSIInquiry? inq = Inquiry.Decode(inqBuf);
                     DicConsole.WriteLine(Inquiry.Prettify(inq));
@@ -293,9 +290,8 @@ namespace DiscImageChef.Commands
 
                                     DicConsole.WriteLine("ASCII Page {0:X2}h: {1}", page, EVPD.DecodeASCIIPage(inqBuf));
 
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0x80)
                                 {
@@ -303,9 +299,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("Unit Serial Number: {0}", EVPD.DecodePage80(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0x81)
                                 {
@@ -313,9 +308,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_81(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0x82)
                                 {
@@ -324,9 +318,8 @@ namespace DiscImageChef.Commands
 
                                     DicConsole.WriteLine("ASCII implemented operating definitions: {0}",
                                                          EVPD.DecodePage82(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0x83)
                                 {
@@ -334,9 +327,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_83(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0x84)
                                 {
@@ -344,9 +336,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_84(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0x85)
                                 {
@@ -354,9 +345,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_85(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0x86)
                                 {
@@ -364,9 +354,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_86(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0x89)
                                 {
@@ -374,9 +363,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_89(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xB0)
                                 {
@@ -384,9 +372,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_B0(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xB1)
                                 {
@@ -395,9 +382,8 @@ namespace DiscImageChef.Commands
 
                                     DicConsole.WriteLine("Manufacturer-assigned Serial Number: {0}",
                                                          EVPD.DecodePageB1(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xB2)
                                 {
@@ -406,9 +392,8 @@ namespace DiscImageChef.Commands
 
                                     DicConsole.WriteLine("TapeAlert Supported Flags Bitmap: 0x{0:X16}",
                                                          EVPD.DecodePageB2(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xB3)
                                 {
@@ -417,9 +402,8 @@ namespace DiscImageChef.Commands
 
                                     DicConsole.WriteLine("Automation Device Serial Number: {0}",
                                                          EVPD.DecodePageB3(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xB4)
                                 {
@@ -428,9 +412,8 @@ namespace DiscImageChef.Commands
 
                                     DicConsole.WriteLine("Data Transfer Device Element Address: 0x{0}",
                                                          EVPD.DecodePageB4(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xC0 &&
                                         StringHandlers
@@ -441,9 +424,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_C0_Quantum(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xC0 &&
                                         StringHandlers
@@ -454,9 +436,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_C0_Seagate(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xC0 &&
                                         StringHandlers
@@ -467,9 +448,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_C0_IBM(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xC1 &&
                                         StringHandlers
@@ -480,9 +460,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_C1_IBM(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if((page == 0xC0 || page == 0xC1) &&
                                         StringHandlers
@@ -493,9 +472,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_C0_C1_Certance(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if((page == 0xC2 || page == 0xC3 || page == 0xC4 || page == 0xC5 ||
                                          page == 0xC6) &&
@@ -507,9 +485,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_C2_C3_C4_C5_C6_Certance(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if((page == 0xC0 || page == 0xC1 || page == 0xC2 || page == 0xC3 || page == 0xC4 ||
                                          page == 0xC5) &&
@@ -520,9 +497,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_C0_to_C5_HP(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else if(page == 0xDF &&
                                         StringHandlers
@@ -533,9 +509,8 @@ namespace DiscImageChef.Commands
                                     if(sense) continue;
 
                                     DicConsole.WriteLine("{0}", EVPD.PrettifyPage_DF_Certance(inqBuf));
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                     $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
-                                                     inqBuf);
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, $"_scsi_evpd_{page:X2}h.bin",
+                                                     $"SCSI INQUIRY EVPD {page:X2}h", inqBuf);
                                 }
                                 else
                                 {
@@ -546,7 +521,7 @@ namespace DiscImageChef.Commands
 
                                     sense = dev.ScsiInquiry(out inqBuf, out senseBuf, page);
                                     if(!sense)
-                                        DataFile.WriteTo("Device-Info command", OutputPrefix,
+                                        DataFile.WriteTo("Device-Info command", outputPrefix,
                                                          $"_scsi_evpd_{page:X2}h.bin", $"SCSI INQUIRY EVPD {page:X2}h",
                                                          inqBuf);
                                 }
@@ -576,8 +551,8 @@ namespace DiscImageChef.Commands
                     }
 
                     if(!sense)
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_scsi_modesense.bin",
-                                         "SCSI MODE SENSE", modeBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_scsi_modesense.bin", "SCSI MODE SENSE",
+                                         modeBuf);
 
                     if(decMode.HasValue)
                         PrintScsiModePages.Print(decMode.Value, devType, inq.Value.VendorIdentification);
@@ -589,8 +564,8 @@ namespace DiscImageChef.Commands
 
                             if(!sense)
                             {
-                                DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                 "_mmc_getconfiguration.bin", "MMC GET CONFIGURATION", confBuf);
+                                DataFile.WriteTo("Device-Info command", outputPrefix, "_mmc_getconfiguration.bin",
+                                                 "MMC GET CONFIGURATION", confBuf);
 
                                 Features.SeparatedFeatures ftr = Features.Separate(confBuf);
 
@@ -885,7 +860,7 @@ namespace DiscImageChef.Commands
 
                                 if(!plxtSense)
                                 {
-                                    DataFile.WriteTo("Device-Info command", OutputPrefix, "_plextor_eeprom.bin",
+                                    DataFile.WriteTo("Device-Info command", outputPrefix, "_plextor_eeprom.bin",
                                                      "PLEXTOR READ EEPROM", plxtBuf);
 
                                     ushort discs;
@@ -1067,8 +1042,8 @@ namespace DiscImageChef.Commands
                                 DicConsole.ErrorWriteLine("READ BLOCK LIMITS:\n{0}", Sense.PrettifySense(senseBuf));
                             else
                             {
-                                DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                 "_ssc_readblocklimits.bin", "SSC READ BLOCK LIMITS", seqBuf);
+                                DataFile.WriteTo("Device-Info command", outputPrefix, "_ssc_readblocklimits.bin",
+                                                 "SSC READ BLOCK LIMITS", seqBuf);
                                 DicConsole.WriteLine("Block limits for device:");
                                 DicConsole.WriteLine(BlockLimits.Prettify(seqBuf));
                             }
@@ -1079,8 +1054,8 @@ namespace DiscImageChef.Commands
                                                           Sense.PrettifySense(senseBuf));
                             else
                             {
-                                DataFile.WriteTo("Device-Info command", OutputPrefix,
-                                                 "_ssc_reportdensitysupport.bin", "SSC REPORT DENSITY SUPPORT", seqBuf);
+                                DataFile.WriteTo("Device-Info command", outputPrefix, "_ssc_reportdensitysupport.bin",
+                                                 "SSC REPORT DENSITY SUPPORT", seqBuf);
                                 DensitySupport.DensitySupportHeader? dens = DensitySupport.DecodeDensity(seqBuf);
                                 if(dens.HasValue)
                                 {
@@ -1095,7 +1070,7 @@ namespace DiscImageChef.Commands
                                                           Sense.PrettifySense(senseBuf));
                             else
                             {
-                                DataFile.WriteTo("Device-Info command", OutputPrefix,
+                                DataFile.WriteTo("Device-Info command", outputPrefix,
                                                  "_ssc_reportdensitysupport_medium.bin",
                                                  "SSC REPORT DENSITY SUPPORT (MEDIUM)", seqBuf);
                                 DensitySupport.MediaTypeSupportHeader? meds = DensitySupport.DecodeMediumType(seqBuf);
@@ -1121,8 +1096,7 @@ namespace DiscImageChef.Commands
                     if(!sense)
                     {
                         noInfo = false;
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_mmc_cid.bin", "MMC CID",
-                                         mmcBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_mmc_cid.bin", "MMC CID", mmcBuf);
                         DicConsole.WriteLine("{0}", Decoders.MMC.Decoders.PrettifyCID(mmcBuf));
                     }
 
@@ -1130,8 +1104,7 @@ namespace DiscImageChef.Commands
                     if(!sense)
                     {
                         noInfo = false;
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_mmc_csd.bin", "MMC CSD",
-                                         mmcBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_mmc_csd.bin", "MMC CSD", mmcBuf);
                         DicConsole.WriteLine("{0}", Decoders.MMC.Decoders.PrettifyCSD(mmcBuf));
                     }
 
@@ -1139,8 +1112,7 @@ namespace DiscImageChef.Commands
                     if(!sense)
                     {
                         noInfo = false;
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_mmc_ocr.bin", "MMC OCR",
-                                         mmcBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_mmc_ocr.bin", "MMC OCR", mmcBuf);
                         DicConsole.WriteLine("{0}", Decoders.MMC.Decoders.PrettifyOCR(mmcBuf));
                     }
 
@@ -1148,8 +1120,8 @@ namespace DiscImageChef.Commands
                     if(!sense)
                     {
                         noInfo = false;
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_mmc_ecsd.bin",
-                                         "MMC Extended CSD", mmcBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_mmc_ecsd.bin", "MMC Extended CSD",
+                                         mmcBuf);
                         DicConsole.WriteLine("{0}", Decoders.MMC.Decoders.PrettifyExtendedCSD(mmcBuf));
                     }
 
@@ -1164,8 +1136,8 @@ namespace DiscImageChef.Commands
                     if(!sense)
                     {
                         noInfo = false;
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_sd_cid.bin",
-                                         "SecureDigital CID", sdBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_sd_cid.bin", "SecureDigital CID",
+                                         sdBuf);
                         DicConsole.WriteLine("{0}", Decoders.SecureDigital.Decoders.PrettifyCID(sdBuf));
                     }
 
@@ -1173,8 +1145,8 @@ namespace DiscImageChef.Commands
                     if(!sense)
                     {
                         noInfo = false;
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_sd_csd.bin",
-                                         "SecureDigital CSD", sdBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_sd_csd.bin", "SecureDigital CSD",
+                                         sdBuf);
                         DicConsole.WriteLine("{0}", Decoders.SecureDigital.Decoders.PrettifyCSD(sdBuf));
                     }
 
@@ -1182,8 +1154,8 @@ namespace DiscImageChef.Commands
                     if(!sense)
                     {
                         noInfo = false;
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_sd_ocr.bin",
-                                         "SecureDigital OCR", sdBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_sd_ocr.bin", "SecureDigital OCR",
+                                         sdBuf);
                         DicConsole.WriteLine("{0}", Decoders.SecureDigital.Decoders.PrettifyOCR(sdBuf));
                     }
 
@@ -1191,8 +1163,8 @@ namespace DiscImageChef.Commands
                     if(!sense)
                     {
                         noInfo = false;
-                        DataFile.WriteTo("Device-Info command", OutputPrefix, "_sd_scr.bin",
-                                         "SecureDigital SCR", sdBuf);
+                        DataFile.WriteTo("Device-Info command", outputPrefix, "_sd_scr.bin", "SecureDigital SCR",
+                                         sdBuf);
                         DicConsole.WriteLine("{0}", Decoders.SecureDigital.Decoders.PrettifySCR(sdBuf));
                     }
 
@@ -1204,7 +1176,7 @@ namespace DiscImageChef.Commands
                     break;
             }
 
-            Core.Statistics.AddCommand("device-info");
+            Statistics.AddCommand("device-info");
         }
     }
 }
