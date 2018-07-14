@@ -55,6 +55,11 @@
     <Compile Include="Commands\ConvertImage.cs" />
     <Compile Include="Commands\ImageInfo.cs" />
     <Compile Include="Commands\ListOptions.cs" />
+    <Compile Include="Controllers\About.cs" />
+    <Compile Include="Controllers\Device.cs" />
+    <Compile Include="Controllers\Filesystem.cs" />
+    <Compile Include="Controllers\Image.cs" />
+    <Compile Include="Controllers\Media.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Commands\Formats.cs" />

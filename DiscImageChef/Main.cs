@@ -32,7 +32,7 @@
 
 using System;
 using System.Reflection;
-using CommandLine;
+using CommandAndConquer.CLI.Core;
 using DiscImageChef.Commands;
 using DiscImageChef.Console;
 using DiscImageChef.Settings;
@@ -48,162 +48,15 @@ namespace DiscImageChef
             DicConsole.WriteEvent          += System.Console.Write;
             DicConsole.ErrorWriteLineEvent += System.Console.Error.WriteLine;
 
+            PrintCopyright();
+
             Settings.Settings.LoadSettings();
             if(Settings.Settings.Current.GdprCompliance < DicSettings.GdprLevel) Configure.DoConfigure(true);
             Statistics.LoadStats();
             if(Settings.Settings.Current.Stats != null && Settings.Settings.Current.Stats.ShareStats)
                 Statistics.SubmitStats();
 
-            Parser.Default.ParseArguments(args, typeof(AnalyzeOptions), typeof(BenchmarkOptions),
-                                          typeof(ChecksumOptions), typeof(CompareOptions), typeof(ConfigureOptions),
-                                          typeof(ConvertImageOptions), typeof(CreateSidecarOptions),
-                                          typeof(DecodeOptions), typeof(DeviceInfoOptions), typeof(DeviceReportOptions),
-                                          typeof(DumpMediaOptions), typeof(EntropyOptions), typeof(ExtractFilesOptions),
-                                          typeof(FormatsOptions), typeof(ImageInfoOptions), typeof(ListDevicesOptions),
-                                          typeof(ListEncodingsOptions), typeof(ListOptionsOptions), typeof(LsOptions),
-                                          typeof(MediaInfoOptions), typeof(MediaScanOptions), typeof(PrintHexOptions),
-                                          typeof(StatsOptions), typeof(VerifyOptions))
-                  .WithParsed<AnalyzeOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Analyze.DoAnalyze(opts);
-                   }).WithParsed<CompareOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Compare.DoCompare(opts);
-                   }).WithParsed<ChecksumOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Checksum.DoChecksum(opts);
-                   }).WithParsed<EntropyOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Entropy.DoEntropy(opts);
-                   }).WithParsed<VerifyOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Verify.DoVerify(opts);
-                   }).WithParsed<PrintHexOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Commands.PrintHex.DoPrintHex(opts);
-                   }).WithParsed<DecodeOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Decode.DoDecode(opts);
-                   }).WithParsed<DeviceInfoOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       DeviceInfo.DoDeviceInfo(opts);
-                   }).WithParsed<MediaInfoOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       MediaInfo.DoMediaInfo(opts);
-                   }).WithParsed<MediaScanOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       MediaScan.DoMediaScan(opts);
-                   }).WithParsed<FormatsOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Formats.ListFormats(opts);
-                   }).WithParsed<BenchmarkOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Benchmark.DoBenchmark(opts);
-                   }).WithParsed<CreateSidecarOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       CreateSidecar.DoSidecar(opts);
-                   }).WithParsed<DumpMediaOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       DumpMedia.DoDumpMedia(opts);
-                   }).WithParsed<DeviceReportOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       DeviceReport.DoDeviceReport(opts);
-                   }).WithParsed<LsOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       Ls.DoLs(opts);
-                   }).WithParsed<ExtractFilesOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       ExtractFiles.DoExtractFiles(opts);
-                   }).WithParsed<ListDevicesOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       ListDevices.DoListDevices(opts);
-                   }).WithParsed<ListEncodingsOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       ListEncodings.DoList();
-                   }).WithParsed<ListOptionsOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       ListOptions.DoList();
-                   }).WithParsed<ConvertImageOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       ConvertImage.DoConvert(opts);
-                   }).WithParsed<ImageInfoOptions>(opts =>
-                   {
-                       if(opts.Debug) DicConsole.DebugWriteLineEvent     += System.Console.Error.WriteLine;
-                       if(opts.Verbose) DicConsole.VerboseWriteLineEvent += System.Console.WriteLine;
-                       PrintCopyright();
-                       ImageInfo.GetImageInfo(opts);
-                   }).WithParsed<ConfigureOptions>(opts =>
-                   {
-                       PrintCopyright();
-                       Configure.DoConfigure(false);
-                   }).WithParsed<StatsOptions>(opts =>
-                   {
-                       PrintCopyright();
-                       Commands.Statistics.ShowStats();
-                   }).WithNotParsed(errs => Environment.Exit(1));
+            Processor.ProcessArguments(args);
 
             Statistics.SaveStats();
         }
