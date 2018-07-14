@@ -30,6 +30,7 @@
 // Copyright © 2011-2018 Natalia Portillo
 // ****************************************************************************/
 
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.CommonTypes.Enums;
 using DiscImageChef.CommonTypes.Interfaces;
@@ -38,24 +39,31 @@ using DiscImageChef.Core;
 using DiscImageChef.Decoders.ATA;
 using DiscImageChef.Decoders.CD;
 using DiscImageChef.Decoders.SCSI;
-using DiscImageChef.Filters;
 
 namespace DiscImageChef.Commands
 {
-    static class Decode
+    public static partial class Image
     {
-        internal static void DoDecode(DecodeOptions options)
+        [CliCommand("decode", "Decodes and pretty prints disk and/or sector tags.")]
+        public static void Decode([CliParameter(                        'i', "Disc image.")]   string InputFile,
+                                  [CliParameter(                        's', "Start sector.")] ulong  StartSector = 0,
+                                  [CliParameter(                        'l', "How many sectors to decode, or \"all\".")]
+                                  string Length = "all",  [CliParameter('k', "Decode disk tags.")]
+                                  bool DiskTags = true,   [CliParameter('t', "Decode sector tags.")]
+                                  bool SectorTags = true, [CliParameter('d', "Shows debug output from plugins.")]
+                                  bool debug = false,     [CliParameter('v', "Shows verbose output.")]
+                                  bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Decode command", "--debug={0}",       options.Debug);
-            DicConsole.DebugWriteLine("Decode command", "--verbose={0}",     options.Verbose);
-            DicConsole.DebugWriteLine("Decode command", "--input={0}",       options.InputFile);
-            DicConsole.DebugWriteLine("Decode command", "--start={0}",       options.StartSector);
-            DicConsole.DebugWriteLine("Decode command", "--length={0}",      options.Length);
-            DicConsole.DebugWriteLine("Decode command", "--disk-tags={0}",   options.DiskTags);
-            DicConsole.DebugWriteLine("Decode command", "--sector-tags={0}", options.SectorTags);
+            DicConsole.DebugWriteLine("Decode command", "--debug={0}",       debug);
+            DicConsole.DebugWriteLine("Decode command", "--verbose={0}",     verbose);
+            DicConsole.DebugWriteLine("Decode command", "--input={0}",       InputFile);
+            DicConsole.DebugWriteLine("Decode command", "--start={0}",       StartSector);
+            DicConsole.DebugWriteLine("Decode command", "--length={0}",      Length);
+            DicConsole.DebugWriteLine("Decode command", "--disk-tags={0}",   DiskTags);
+            DicConsole.DebugWriteLine("Decode command", "--sector-tags={0}", SectorTags);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(options.InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(InputFile);
 
             if(inputFilter == null)
             {
@@ -76,7 +84,7 @@ namespace DiscImageChef.Commands
             Core.Statistics.AddMedia(inputFormat.Info.MediaType, false);
             Core.Statistics.AddFilter(inputFilter.Name);
 
-            if(options.DiskTags)
+            if(DiskTags)
                 if(inputFormat.Info.ReadableMediaTags.Count == 0)
                     DicConsole.WriteLine("There are no disk tags in chosen disc image.");
                 else
@@ -238,14 +246,14 @@ namespace DiscImageChef.Commands
                                 break;
                         }
 
-            if(options.SectorTags)
+            if(SectorTags)
             {
-                if(options.Length.ToLowerInvariant() == "all") { }
+                if(Length.ToLowerInvariant() == "all") { }
                 else
                 {
-                    if(!ulong.TryParse(options.Length, out ulong _))
+                    if(!ulong.TryParse(Length, out ulong _))
                     {
-                        DicConsole.WriteLine("Value \"{0}\" is not a valid number for length.", options.Length);
+                        DicConsole.WriteLine("Value \"{0}\" is not a valid number for length.", Length);
                         DicConsole.WriteLine("Not decoding sectors tags");
                         return;
                     }

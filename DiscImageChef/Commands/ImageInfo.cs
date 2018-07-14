@@ -31,24 +31,28 @@
 // ****************************************************************************/
 
 using System;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.CommonTypes.Interfaces;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
-using DiscImageChef.Filters;
 
 namespace DiscImageChef.Commands
 {
-    static class ImageInfo
+    public static partial class Image
     {
-        internal static void GetImageInfo(ImageInfoOptions options)
+        [CliCommand("info", "Opens a media image and shows information about the media it represents and metadata.")]
+        public static void Info([CliParameter(                    'i', "Media image.")] string InputFile,
+                                [CliParameter(                    'd', "Shows debug output from plugins.")]
+                                bool debug = false, [CliParameter('v', "Shows verbose output.")]
+                                bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Analyze command", "--debug={0}",   options.Debug);
-            DicConsole.DebugWriteLine("Analyze command", "--verbose={0}", options.Verbose);
-            DicConsole.DebugWriteLine("Analyze command", "--input={0}",   options.InputFile);
+            DicConsole.DebugWriteLine("Analyze command", "--debug={0}",   debug);
+            DicConsole.DebugWriteLine("Analyze command", "--verbose={0}", verbose);
+            DicConsole.DebugWriteLine("Analyze command", "--input={0}",   InputFile);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(options.InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(InputFile);
 
             if(inputFilter == null)
             {

@@ -32,27 +32,33 @@
 
 using System;
 using System.Collections.Generic;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.CommonTypes.Interfaces;
 using DiscImageChef.CommonTypes.Structs;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
-using DiscImageChef.Filters;
 
 namespace DiscImageChef.Commands
 {
-    static class Verify
+    public static partial class Image
     {
-        internal static void DoVerify(VerifyOptions options)
+        [CliCommand("verify", "Verifies a disc image integrity, and if supported, sector integrity.")]
+        public static void Verify([CliParameter(                           'i', "Disc image.")] string InputFile,
+                                  [CliParameter(                           'w', "Verify disc image if supported.")]
+                                  bool VerifyDisc = true,    [CliParameter('s', "Verify all sectors if supported.")]
+                                  bool VerifySectors = true, [CliParameter('d', "Shows debug output from plugins.")]
+                                  bool debug = false,        [CliParameter('v', "Shows verbose output.")]
+                                  bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Verify command", "--debug={0}",          options.Debug);
-            DicConsole.DebugWriteLine("Verify command", "--verbose={0}",        options.Verbose);
-            DicConsole.DebugWriteLine("Verify command", "--input={0}",          options.InputFile);
-            DicConsole.DebugWriteLine("Verify command", "--verify-disc={0}",    options.VerifyDisc);
-            DicConsole.DebugWriteLine("Verify command", "--verify-sectors={0}", options.VerifySectors);
+            DicConsole.DebugWriteLine("Verify command", "--debug={0}",          debug);
+            DicConsole.DebugWriteLine("Verify command", "--verbose={0}",        verbose);
+            DicConsole.DebugWriteLine("Verify command", "--input={0}",          InputFile);
+            DicConsole.DebugWriteLine("Verify command", "--verify-disc={0}",    VerifyDisc);
+            DicConsole.DebugWriteLine("Verify command", "--verify-sectors={0}", VerifySectors);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(options.InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(InputFile);
 
             if(inputFilter == null)
             {
@@ -79,7 +85,7 @@ namespace DiscImageChef.Commands
             long  correctSectors = 0;
             long  unknownSectors = 0;
 
-            if(options.VerifyDisc)
+            if(VerifyDisc)
             {
                 DateTime startCheck      = DateTime.UtcNow;
                 bool?    discCheckStatus = inputFormat.VerifyMediaImage();
@@ -104,7 +110,7 @@ namespace DiscImageChef.Commands
                 DicConsole.VerboseWriteLine("Checking disc image checksums took {0} seconds", checkTime.TotalSeconds);
             }
 
-            if(options.VerifySectors)
+            if(VerifySectors)
             {
                 bool formatHasTracks;
                 try
@@ -216,7 +222,7 @@ namespace DiscImageChef.Commands
 
                 DicConsole.VerboseWriteLine("Checking sector checksums took {0} seconds", checkTime.TotalSeconds);
 
-                if(options.Verbose)
+                if(verbose)
                 {
                     DicConsole.VerboseWriteLine("LBAs with error:");
                     if(failingLbas.Count == (int)inputFormat.Info.Sectors)

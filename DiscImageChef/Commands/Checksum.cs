@@ -32,44 +32,64 @@
 
 using System;
 using System.Collections.Generic;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.CommonTypes.Interfaces;
 using DiscImageChef.CommonTypes.Structs;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
-using DiscImageChef.Filters;
 using Schemas;
 
 namespace DiscImageChef.Commands
 {
-    static class Checksum
+    public static partial class Image
     {
         // How many sectors to read at once
         const uint SECTORS_TO_READ = 256;
 
-        internal static void DoChecksum(ChecksumOptions options)
+        [CliCommand("checksum", "Checksums an image.")]
+        public static void Checksum([CliParameter(                             'i', "Disc image.")] string InputFile,
+                                    [CliParameter(                             't', "Checksums each track separately.")]
+                                    bool SeparatedTracks = true, [CliParameter('w', "Checksums the whole disc.")]
+                                    bool WholeDisc = true,       [CliParameter('a', "Calculates Adler-32.")]
+                                    bool DoAdler32 = true,       [CliParameter('6', "Calculates CRC16.")]
+                                    bool DoCrc16 = true,         [CliParameter('c', "Calculates CRC32.")]
+                                    bool DoCrc32 = true,         [CliParameter('4', "Calculates CRC64 (ECMA).")]
+                                    bool DoCrc64 = false,        [CliParameter('t', "Calculates Fletcher-16.")]
+                                    bool DoFletcher16 = false,   [CliParameter('h', "Calculates Fletcher-32.")]
+                                    bool DoFletcher32 = false,
+                                    [CliParameter(                          'm', "Calculates MD5.")] bool DoMd5 = true,
+                                    [CliParameter(                          'r', "Calculates RIPEMD160.")]
+                                    bool DoRipemd160 = false, [CliParameter('s', "Calculates SHA1.")]
+                                    bool DoSha1 = true,       [CliParameter('2', "Calculates SHA256.")]
+                                    bool DoSha256 = false,    [CliParameter('3', "Calculates SHA384.")]
+                                    bool DoSha384 = false,    [CliParameter('5', "Calculates SHA512.")]
+                                    bool DoSha512 = false,    [CliParameter('f', "Calculates SpamSum fuzzy hash.")]
+                                    bool DoSpamSum = true,    [CliParameter('d', "Shows debug output from plugins.")]
+                                    bool debug = false,       [CliParameter('v', "Shows verbose output.")]
+                                    bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Checksum command", "--debug={0}",            options.Debug);
-            DicConsole.DebugWriteLine("Checksum command", "--verbose={0}",          options.Verbose);
-            DicConsole.DebugWriteLine("Checksum command", "--separated-tracks={0}", options.SeparatedTracks);
-            DicConsole.DebugWriteLine("Checksum command", "--whole-disc={0}",       options.WholeDisc);
-            DicConsole.DebugWriteLine("Checksum command", "--input={0}",            options.InputFile);
-            DicConsole.DebugWriteLine("Checksum command", "--adler32={0}",          options.DoAdler32);
-            DicConsole.DebugWriteLine("Checksum command", "--crc16={0}",            options.DoCrc16);
-            DicConsole.DebugWriteLine("Checksum command", "--crc32={0}",            options.DoCrc32);
-            DicConsole.DebugWriteLine("Checksum command", "--crc64={0}",            options.DoCrc64);
-            DicConsole.DebugWriteLine("Checksum command", "--md5={0}",              options.DoMd5);
-            DicConsole.DebugWriteLine("Checksum command", "--ripemd160={0}",        options.DoRipemd160);
-            DicConsole.DebugWriteLine("Checksum command", "--sha1={0}",             options.DoSha1);
-            DicConsole.DebugWriteLine("Checksum command", "--sha256={0}",           options.DoSha256);
-            DicConsole.DebugWriteLine("Checksum command", "--sha384={0}",           options.DoSha384);
-            DicConsole.DebugWriteLine("Checksum command", "--sha512={0}",           options.DoSha512);
-            DicConsole.DebugWriteLine("Checksum command", "--spamsum={0}",          options.DoSpamSum);
-            DicConsole.DebugWriteLine("Checksum command", "--fletcher16={0}",       options.DoFletcher16);
-            DicConsole.DebugWriteLine("Checksum command", "--fletcher32={0}",       options.DoFletcher32);
+            DicConsole.DebugWriteLine("Checksum command", "--debug={0}",            debug);
+            DicConsole.DebugWriteLine("Checksum command", "--verbose={0}",          verbose);
+            DicConsole.DebugWriteLine("Checksum command", "--separated-tracks={0}", SeparatedTracks);
+            DicConsole.DebugWriteLine("Checksum command", "--whole-disc={0}",       WholeDisc);
+            DicConsole.DebugWriteLine("Checksum command", "--input={0}",            InputFile);
+            DicConsole.DebugWriteLine("Checksum command", "--adler32={0}",          DoAdler32);
+            DicConsole.DebugWriteLine("Checksum command", "--crc16={0}",            DoCrc16);
+            DicConsole.DebugWriteLine("Checksum command", "--crc32={0}",            DoCrc32);
+            DicConsole.DebugWriteLine("Checksum command", "--crc64={0}",            DoCrc64);
+            DicConsole.DebugWriteLine("Checksum command", "--md5={0}",              DoMd5);
+            DicConsole.DebugWriteLine("Checksum command", "--ripemd160={0}",        DoRipemd160);
+            DicConsole.DebugWriteLine("Checksum command", "--sha1={0}",             DoSha1);
+            DicConsole.DebugWriteLine("Checksum command", "--sha256={0}",           DoSha256);
+            DicConsole.DebugWriteLine("Checksum command", "--sha384={0}",           DoSha384);
+            DicConsole.DebugWriteLine("Checksum command", "--sha512={0}",           DoSha512);
+            DicConsole.DebugWriteLine("Checksum command", "--spamsum={0}",          DoSpamSum);
+            DicConsole.DebugWriteLine("Checksum command", "--fletcher16={0}",       DoFletcher16);
+            DicConsole.DebugWriteLine("Checksum command", "--fletcher32={0}",       DoFletcher32);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(options.InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(InputFile);
 
             if(inputFilter == null)
             {
@@ -91,19 +111,19 @@ namespace DiscImageChef.Commands
             Core.Statistics.AddFilter(inputFilter.Name);
             EnableChecksum enabledChecksums = new EnableChecksum();
 
-            if(options.DoAdler32) enabledChecksums    |= EnableChecksum.Adler32;
-            if(options.DoCrc16) enabledChecksums      |= EnableChecksum.Crc16;
-            if(options.DoCrc32) enabledChecksums      |= EnableChecksum.Crc32;
-            if(options.DoCrc64) enabledChecksums      |= EnableChecksum.Crc64;
-            if(options.DoMd5) enabledChecksums        |= EnableChecksum.Md5;
-            if(options.DoRipemd160) enabledChecksums  |= EnableChecksum.Ripemd160;
-            if(options.DoSha1) enabledChecksums       |= EnableChecksum.Sha1;
-            if(options.DoSha256) enabledChecksums     |= EnableChecksum.Sha256;
-            if(options.DoSha384) enabledChecksums     |= EnableChecksum.Sha384;
-            if(options.DoSha512) enabledChecksums     |= EnableChecksum.Sha512;
-            if(options.DoSpamSum) enabledChecksums    |= EnableChecksum.SpamSum;
-            if(options.DoFletcher16) enabledChecksums |= EnableChecksum.Fletcher16;
-            if(options.DoFletcher32) enabledChecksums |= EnableChecksum.Fletcher32;
+            if(DoAdler32) enabledChecksums    |= EnableChecksum.Adler32;
+            if(DoCrc16) enabledChecksums      |= EnableChecksum.Crc16;
+            if(DoCrc32) enabledChecksums      |= EnableChecksum.Crc32;
+            if(DoCrc64) enabledChecksums      |= EnableChecksum.Crc64;
+            if(DoMd5) enabledChecksums        |= EnableChecksum.Md5;
+            if(DoRipemd160) enabledChecksums  |= EnableChecksum.Ripemd160;
+            if(DoSha1) enabledChecksums       |= EnableChecksum.Sha1;
+            if(DoSha256) enabledChecksums     |= EnableChecksum.Sha256;
+            if(DoSha384) enabledChecksums     |= EnableChecksum.Sha384;
+            if(DoSha512) enabledChecksums     |= EnableChecksum.Sha512;
+            if(DoSpamSum) enabledChecksums    |= EnableChecksum.SpamSum;
+            if(DoFletcher16) enabledChecksums |= EnableChecksum.Fletcher16;
+            if(DoFletcher32) enabledChecksums |= EnableChecksum.Fletcher32;
 
             Core.Checksum mediaChecksum = null;
 
@@ -112,14 +132,14 @@ namespace DiscImageChef.Commands
                 {
                     Core.Checksum trackChecksum = null;
 
-                    if(options.WholeDisc) mediaChecksum = new Core.Checksum(enabledChecksums);
+                    if(WholeDisc) mediaChecksum = new Core.Checksum(enabledChecksums);
 
                     ulong previousTrackEnd = 0;
 
                     List<Track> inputTracks = inputFormat.Tracks;
                     foreach(Track currentTrack in inputTracks)
                     {
-                        if(currentTrack.TrackStartSector - previousTrackEnd != 0 && options.WholeDisc)
+                        if(currentTrack.TrackStartSector - previousTrackEnd != 0 && WholeDisc)
                             for(ulong i = previousTrackEnd + 1; i < currentTrack.TrackStartSector; i++)
                             {
                                 DicConsole.Write("\rHashing track-less sector {0}", i);
@@ -134,7 +154,7 @@ namespace DiscImageChef.Commands
                                                   currentTrack.TrackSequence, currentTrack.TrackStartSector,
                                                   currentTrack.TrackEndSector);
 
-                        if(options.SeparatedTracks) trackChecksum = new Core.Checksum(enabledChecksums);
+                        if(SeparatedTracks) trackChecksum = new Core.Checksum(enabledChecksums);
 
                         ulong sectors     = currentTrack.TrackEndSector - currentTrack.TrackStartSector + 1;
                         ulong doneSectors = 0;
@@ -161,14 +181,14 @@ namespace DiscImageChef.Commands
                                 doneSectors += sectors - doneSectors;
                             }
 
-                            if(options.WholeDisc) mediaChecksum?.Update(sector);
+                            if(WholeDisc) mediaChecksum?.Update(sector);
 
-                            if(options.SeparatedTracks) trackChecksum?.Update(sector);
+                            if(SeparatedTracks) trackChecksum?.Update(sector);
                         }
 
                         DicConsole.WriteLine();
 
-                        if(options.SeparatedTracks)
+                        if(SeparatedTracks)
                             if(trackChecksum != null)
                                 foreach(ChecksumType chk in trackChecksum.End())
                                     DicConsole.WriteLine("Track {0}'s {1}: {2}", currentTrack.TrackSequence, chk.type,
@@ -177,7 +197,7 @@ namespace DiscImageChef.Commands
                         previousTrackEnd = currentTrack.TrackEndSector;
                     }
 
-                    if(inputFormat.Info.Sectors - previousTrackEnd != 0 && options.WholeDisc)
+                    if(inputFormat.Info.Sectors - previousTrackEnd != 0 && WholeDisc)
                         for(ulong i = previousTrackEnd + 1; i < inputFormat.Info.Sectors; i++)
                         {
                             DicConsole.Write("\rHashing track-less sector {0}", i);
@@ -186,14 +206,14 @@ namespace DiscImageChef.Commands
                             mediaChecksum?.Update(hiddenSector);
                         }
 
-                    if(options.WholeDisc)
+                    if(WholeDisc)
                         if(mediaChecksum != null)
                             foreach(ChecksumType chk in mediaChecksum.End())
                                 DicConsole.WriteLine("Disk's {0}: {1}", chk.type, chk.Value);
                 }
                 catch(Exception ex)
                 {
-                    if(options.Debug) DicConsole.DebugWriteLine("Could not get tracks because {0}", ex.Message);
+                    if(debug) DicConsole.DebugWriteLine("Could not get tracks because {0}", ex.Message);
                     else DicConsole.WriteLine("Unable to get separate tracks, not checksumming them");
                 }
             else

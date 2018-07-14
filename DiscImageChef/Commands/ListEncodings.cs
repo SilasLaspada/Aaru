@@ -33,13 +33,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.Console;
 
 namespace DiscImageChef.Commands
 {
-    static class ListEncodings
+    public static partial class About
     {
-        internal static void DoList()
+        [CliCommand("list-encodings", "Lists all supported text encodings and code pages.")]
+        public static void ListEncodings()
         {
             List<CommonEncodingInfo> encodings = Encoding
                                                 .GetEncodings().Select(info => new CommonEncodingInfo

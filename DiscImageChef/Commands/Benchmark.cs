@@ -31,21 +31,28 @@
 // ****************************************************************************/
 
 using System.Collections.Generic;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
 
 namespace DiscImageChef.Commands
 {
-    static class Benchmark
+    [CliController("about", "Shows information about DiscImageChef")]
+    public static partial class About
     {
-        internal static void DoBenchmark(BenchmarkOptions options)
+        [CliCommand("benchmark", "Benchmarks hashing and entropy calculation.")]
+        public static void Benchmark([CliParameter(                      'b', "Block size.")] int BlockSize = 512,
+                                     [CliParameter(                      's', "Buffer size in mebibytes.")]
+                                     int BufferSize = 128, [CliParameter('d', "Shows debug output from plugins.")]
+                                     bool debug = false,   [CliParameter('v', "Shows verbose output.")]
+                                     bool verbose = false)
         {
             Dictionary<string, double> checksumTimes = new Dictionary<string, double>();
             Core.Benchmark.InitProgressEvent   += Progress.InitProgress;
             Core.Benchmark.UpdateProgressEvent += Progress.UpdateProgress;
             Core.Benchmark.EndProgressEvent    += Progress.EndProgress;
 
-            BenchmarkResults results = Core.Benchmark.Do(options.BufferSize * 1024 * 1024, options.BlockSize);
+            BenchmarkResults results = Core.Benchmark.Do(BufferSize * 1024 * 1024, BlockSize);
 
             DicConsole.WriteLine("Took {0} seconds to fill buffer, {1:F3} MiB/sec.", results.FillTime,
                                  results.FillSpeed);

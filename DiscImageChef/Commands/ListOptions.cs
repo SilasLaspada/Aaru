@@ -33,16 +33,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.CommonTypes.Interfaces;
 using DiscImageChef.Console;
-using DiscImageChef.Core;
 
 namespace DiscImageChef.Commands
 {
-    static class ListOptions
+    public static partial class About
     {
-        internal static void DoList()
+        [CliCommand("list-options", "Lists all options supported by read-only filesystems and writable media images.")]
+        public static void ListOptions()
         {
             PluginBase plugins = new PluginBase();
 

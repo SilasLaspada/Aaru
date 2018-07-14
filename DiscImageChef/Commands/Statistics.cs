@@ -30,14 +30,16 @@
 // Copyright © 2011-2018 Natalia Portillo
 // ****************************************************************************/
 
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes.Metadata;
 using DiscImageChef.Console;
 
 namespace DiscImageChef.Commands
 {
-    static class Statistics
+    public static partial class About
     {
-        internal static void ShowStats()
+        [CliCommand("stats", "Shows statistics.")]
+        public static void Statistics()
         {
             if(Core.Statistics.AllStats == null)
             {

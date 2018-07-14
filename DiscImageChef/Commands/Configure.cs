@@ -31,13 +31,20 @@
 // ****************************************************************************/
 
 using System;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.Console;
 using DiscImageChef.Settings;
 
 namespace DiscImageChef.Commands
 {
-    static class Configure
+    public static partial class About
     {
+        [CliCommand("configure", "Configures user settings and statistics.")]
+        public static void Configure()
+        {
+            DoConfigure(false);
+        }
+
         internal static void DoConfigure(bool gdprChange)
         {
             if(gdprChange)

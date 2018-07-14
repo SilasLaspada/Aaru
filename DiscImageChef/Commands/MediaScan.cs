@@ -31,27 +31,36 @@
 // ****************************************************************************/
 
 using System;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.Console;
 using DiscImageChef.Core.Devices.Scanning;
 using DiscImageChef.Devices;
 
 namespace DiscImageChef.Commands
 {
-    static class MediaScan
+    public static partial class Media
     {
-        internal static void DoMediaScan(MediaScanOptions options)
+        [CliCommand("scan", "Scans the media inserted on a device.")]
+        public static void Scan([CliParameter('i', "Device path.")] string DevicePath,
+                                [CliParameter('m',
+                                    "Write a log of the scan in the format used by MHDD.")]
+                                string MhddLogPath = null, [CliParameter('b',
+                                    "Write a log of the scan in the format used by ImgBurn.")]
+                                string IbgLogPath = null, [CliParameter('d', "Shows debug output from plugins.")]
+                                bool debug = false,       [CliParameter('v', "Shows verbose output.")]
+                                bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Media-Scan command", "--debug={0}",    options.Debug);
-            DicConsole.DebugWriteLine("Media-Scan command", "--verbose={0}",  options.Verbose);
-            DicConsole.DebugWriteLine("Media-Scan command", "--device={0}",   options.DevicePath);
-            DicConsole.DebugWriteLine("Media-Scan command", "--mhdd-log={0}", options.MhddLogPath);
-            DicConsole.DebugWriteLine("Media-Scan command", "--ibg-log={0}",  options.IbgLogPath);
+            DicConsole.DebugWriteLine("Media-Scan command", "--debug={0}",    debug);
+            DicConsole.DebugWriteLine("Media-Scan command", "--verbose={0}",  verbose);
+            DicConsole.DebugWriteLine("Media-Scan command", "--device={0}",   DevicePath);
+            DicConsole.DebugWriteLine("Media-Scan command", "--mhdd-log={0}", MhddLogPath);
+            DicConsole.DebugWriteLine("Media-Scan command", "--ibg-log={0}",  IbgLogPath);
 
-            if(options.DevicePath.Length == 2 && options.DevicePath[1] == ':' && options.DevicePath[0] != '/' &&
-               char.IsLetter(options.DevicePath[0]))
-                options.DevicePath = "\\\\.\\" + char.ToUpper(options.DevicePath[0]) + ':';
+            if(DevicePath.Length == 2 && DevicePath[1] == ':' && DevicePath[0] != '/' &&
+               char.IsLetter(DevicePath[0]))
+                DevicePath = "\\\\.\\" + char.ToUpper(DevicePath[0]) + ':';
 
-            Device dev = new Device(options.DevicePath);
+            DiscImageChef.Devices.Device dev = new DiscImageChef.Devices.Device(DevicePath);
 
             if(dev.Error)
             {
@@ -66,18 +75,18 @@ namespace DiscImageChef.Commands
             switch(dev.Type)
             {
                 case DeviceType.ATA:
-                    results = Ata.Scan(options.MhddLogPath, options.IbgLogPath, options.DevicePath, dev);
+                    results = Ata.Scan(MhddLogPath, IbgLogPath, DevicePath, dev);
                     break;
                 case DeviceType.MMC:
                 case DeviceType.SecureDigital:
-                    results = SecureDigital.Scan(options.MhddLogPath, options.IbgLogPath, options.DevicePath, dev);
+                    results = SecureDigital.Scan(MhddLogPath, IbgLogPath, DevicePath, dev);
                     break;
                 case DeviceType.NVMe:
-                    results = Nvme.Scan(options.MhddLogPath, options.IbgLogPath, options.DevicePath, dev);
+                    results = Nvme.Scan(MhddLogPath, IbgLogPath, DevicePath, dev);
                     break;
                 case DeviceType.ATAPI:
                 case DeviceType.SCSI:
-                    results = Scsi.Scan(options.MhddLogPath, options.IbgLogPath, options.DevicePath, dev);
+                    results = Scsi.Scan(MhddLogPath, IbgLogPath, DevicePath, dev);
                     break;
                 default: throw new NotSupportedException("Unknown device type.");
             }

@@ -36,6 +36,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.CommonTypes.Interfaces;
 using DiscImageChef.CommonTypes.Metadata;
@@ -48,9 +49,42 @@ using Schemas;
 
 namespace DiscImageChef.Commands
 {
-    static class DumpMedia
+    [CliController("media", "Handles medias")]
+    public static partial class Media
     {
-        internal static void DoDumpMedia(DumpMediaOptions options)
+        [CliCommand("dump", "Dumps the media inserted on a device to a media image.")]
+        public static void Dump([CliParameter('i', "Device path.")]  string DevicePath,
+                                [CliParameter('o', "Output image.")] string OutputFile,
+
+                                // TODO: Disabled temporarily
+                                /*        [CliParameter('r', "Dump sectors with tags included. For optical media, dump scrambled sectors")]
+                                        bool Raw = false,*/
+                                [CliParameter(                          's', "Stop media dump on first error.")]
+                                bool StopOnError = false, [CliParameter('f', "Continue dump whatever happens.")]
+                                bool Force = false,       [CliParameter('p', "How many retry passes to do.")]
+                                ushort RetryPasses = 5,
+                                [CliParameter(                         'P', "Try to recover partial or incorrect data.")]
+                                bool Persistent = false, [CliParameter('m', "Create/use resume mapfile.")]
+                                bool Resume = true,
+                                [CliParameter('l',
+                                    "Try to read lead-in. Only applicable to CD/DDCD/GD.")]
+                                bool LeadIn = false,        [CliParameter('e', "Name of character encoding to use.")]
+                                string EncodingName = null, [CliParameter('t',
+                                    "Format of the output image, as plugin name or plugin id. If not present, will try to detect it from output image extension.")]
+                                string OutputFormat = null, [CliParameter('O',
+                                    "Comma separated name=value pairs of options to pass to output image plugin")]
+                                string Options = null,
+                                [CliParameter('x',
+                                    "Take metadata from existing CICM XML sidecar.")]
+                                string CicmXml = null, [CliParameter('k',
+                                    "When an unreadable sector is found skip this many sectors.")]
+                                int Skip = 512, [CliParameter('a', "Disables creating CICM XML sidecar.")]
+                                bool NoMetadata = false,
+                                [CliParameter('t',
+                                    "Disables trimming errored from skipped sectors.")]
+                                bool NoTrim = false, [CliParameter('d', "Shows debug output from plugins.")]
+                                bool debug = false,  [CliParameter('v', "Shows verbose output.")]
+                                bool verbose = false)
         {
             // TODO: Be able to cancel hashing
             Sidecar.InitProgressEvent    += Progress.InitProgress;
@@ -61,38 +95,38 @@ namespace DiscImageChef.Commands
             Sidecar.EndProgressEvent2    += Progress.EndProgress2;
             Sidecar.UpdateStatusEvent    += Progress.UpdateStatus;
 
-            DicConsole.DebugWriteLine("Dump-Media command", "--debug={0}",   options.Debug);
-            DicConsole.DebugWriteLine("Dump-Media command", "--verbose={0}", options.Verbose);
-            DicConsole.DebugWriteLine("Dump-Media command", "--device={0}",  options.DevicePath);
+            DicConsole.DebugWriteLine("Dump-Media command", "--debug={0}",   debug);
+            DicConsole.DebugWriteLine("Dump-Media command", "--verbose={0}", verbose);
+            DicConsole.DebugWriteLine("Dump-Media command", "--device={0}",  DevicePath);
             // TODO: Disabled temporarily
-            //DicConsole.DebugWriteLine("Dump-Media command", "--raw={0}",           options.Raw);
-            DicConsole.DebugWriteLine("Dump-Media command", "--stop-on-error={0}", options.StopOnError);
-            DicConsole.DebugWriteLine("Dump-Media command", "--force={0}",         options.Force);
-            DicConsole.DebugWriteLine("Dump-Media command", "--retry-passes={0}",  options.RetryPasses);
-            DicConsole.DebugWriteLine("Dump-Media command", "--persistent={0}",    options.Persistent);
-            DicConsole.DebugWriteLine("Dump-Media command", "--resume={0}",        options.Resume);
-            DicConsole.DebugWriteLine("Dump-Media command", "--lead-in={0}",       options.LeadIn);
-            DicConsole.DebugWriteLine("Dump-Media command", "--encoding={0}",      options.EncodingName);
-            DicConsole.DebugWriteLine("Dump-Media command", "--output={0}",        options.OutputFile);
-            DicConsole.DebugWriteLine("Dump-Media command", "--format={0}",        options.OutputFormat);
-            DicConsole.DebugWriteLine("Dump-Media command", "--force={0}",         options.Force);
-            DicConsole.DebugWriteLine("Dump-Media command", "--options={0}",       options.Options);
-            DicConsole.DebugWriteLine("Dump-Media command", "--cicm-xml={0}",      options.CicmXml);
-            DicConsole.DebugWriteLine("Dump-Media command", "--skip={0}",          options.Skip);
-            DicConsole.DebugWriteLine("Dump-Media command", "--no-metadata={0}",   options.NoMetadata);
+            //DicConsole.DebugWriteLine("Dump-Media command", "--raw={0}",           Raw);
+            DicConsole.DebugWriteLine("Dump-Media command", "--stop-on-error={0}", StopOnError);
+            DicConsole.DebugWriteLine("Dump-Media command", "--force={0}",         Force);
+            DicConsole.DebugWriteLine("Dump-Media command", "--retry-passes={0}",  RetryPasses);
+            DicConsole.DebugWriteLine("Dump-Media command", "--persistent={0}",    Persistent);
+            DicConsole.DebugWriteLine("Dump-Media command", "--resume={0}",        Resume);
+            DicConsole.DebugWriteLine("Dump-Media command", "--lead-in={0}",       LeadIn);
+            DicConsole.DebugWriteLine("Dump-Media command", "--encoding={0}",      EncodingName);
+            DicConsole.DebugWriteLine("Dump-Media command", "--output={0}",        OutputFile);
+            DicConsole.DebugWriteLine("Dump-Media command", "--format={0}",        OutputFormat);
+            DicConsole.DebugWriteLine("Dump-Media command", "--options={0}",       Options);
+            DicConsole.DebugWriteLine("Dump-Media command", "--cicm-xml={0}",      CicmXml);
+            DicConsole.DebugWriteLine("Dump-Media command", "--skip={0}",          Skip);
+            DicConsole.DebugWriteLine("Dump-Media command", "--no-metadata={0}",   NoMetadata);
+            DicConsole.DebugWriteLine("Dump-Media command", "--no-trim={0}", NoTrim);
 
-            Dictionary<string, string> parsedOptions = Options.Parse(options.Options);
+            Dictionary<string, string> parsedOptions = Core.Options.Parse(Options);
             DicConsole.DebugWriteLine("Dump-Media command", "Parsed options:");
             foreach(KeyValuePair<string, string> parsedOption in parsedOptions)
                 DicConsole.DebugWriteLine("Dump-Media command", "{0} = {1}", parsedOption.Key, parsedOption.Value);
 
             Encoding encoding = null;
 
-            if(options.EncodingName != null)
+            if(EncodingName != null)
                 try
                 {
-                    encoding = Claunia.Encoding.Encoding.GetEncoding(options.EncodingName);
-                    if(options.Verbose) DicConsole.VerboseWriteLine("Using encoding for {0}.", encoding.EncodingName);
+                    encoding = Claunia.Encoding.Encoding.GetEncoding(EncodingName);
+                    if(verbose) DicConsole.VerboseWriteLine("Using encoding for {0}.", encoding.EncodingName);
                 }
                 catch(ArgumentException)
                 {
@@ -100,11 +134,11 @@ namespace DiscImageChef.Commands
                     return;
                 }
 
-            if(options.DevicePath.Length == 2 && options.DevicePath[1] == ':' && options.DevicePath[0] != '/' &&
-               char.IsLetter(options.DevicePath[0]))
-                options.DevicePath = "\\\\.\\" + char.ToUpper(options.DevicePath[0]) + ':';
+            if(DevicePath.Length == 2 && DevicePath[1] == ':' && DevicePath[0] != '/' &&
+               char.IsLetter(DevicePath[0]))
+                DevicePath = "\\\\.\\" + char.ToUpper(DevicePath[0]) + ':';
 
-            Device dev = new Device(options.DevicePath);
+            DiscImageChef.Devices.Device dev = new DiscImageChef.Devices.Device(DevicePath);
 
             if(dev.Error)
             {
@@ -114,12 +148,12 @@ namespace DiscImageChef.Commands
 
             Core.Statistics.AddDevice(dev);
 
-            string outputPrefix = Path.Combine(Path.GetDirectoryName(options.OutputFile),
-                                               Path.GetFileNameWithoutExtension(options.OutputFile));
+            string outputPrefix = Path.Combine(Path.GetDirectoryName(OutputFile),
+                                               Path.GetFileNameWithoutExtension(OutputFile));
 
             Resume        resume = null;
             XmlSerializer xs     = new XmlSerializer(typeof(Resume));
-            if(File.Exists(outputPrefix + ".resume.xml") && options.Resume)
+            if(File.Exists(outputPrefix + ".resume.xml") && Resume)
                 try
                 {
                     StreamReader sr = new StreamReader(outputPrefix + ".resume.xml");
@@ -140,11 +174,11 @@ namespace DiscImageChef.Commands
 
             CICMMetadataType sidecar   = null;
             XmlSerializer    sidecarXs = new XmlSerializer(typeof(CICMMetadataType));
-            if(options.CicmXml != null)
-                if(File.Exists(options.CicmXml))
+            if(CicmXml != null)
+                if(File.Exists(CicmXml))
                     try
                     {
-                        StreamReader sr = new StreamReader(options.CicmXml);
+                        StreamReader sr = new StreamReader(CicmXml);
                         sidecar = (CICMMetadataType)sidecarXs.Deserialize(sr);
                         sr.Close();
                     }
@@ -163,17 +197,16 @@ namespace DiscImageChef.Commands
             List<IWritableImage> candidates = new List<IWritableImage>();
 
             // Try extension
-            if(string.IsNullOrEmpty(options.OutputFormat))
+            if(string.IsNullOrEmpty(OutputFormat))
                 candidates.AddRange(plugins.WritableImages.Values.Where(t =>
                                                                             t.KnownExtensions
-                                                                             .Contains(Path.GetExtension(options
-                                                                                                            .OutputFile))));
+                                                                             .Contains(Path.GetExtension(OutputFile))));
             // Try Id
-            else if(Guid.TryParse(options.OutputFormat, out Guid outId))
+            else if(Guid.TryParse(OutputFormat, out Guid outId))
                 candidates.AddRange(plugins.WritableImages.Values.Where(t => t.Id.Equals(outId)));
             // Try name
             else
-                candidates.AddRange(plugins.WritableImages.Values.Where(t => string.Equals(t.Name, options.OutputFormat,
+                candidates.AddRange(plugins.WritableImages.Values.Where(t => string.Equals(t.Name, OutputFormat,
                                                                                            StringComparison
                                                                                               .InvariantCultureIgnoreCase)));
 
@@ -193,7 +226,7 @@ namespace DiscImageChef.Commands
 
             DumpLog dumpLog = new DumpLog(outputPrefix + ".log", dev);
 
-            if(options.Verbose)
+            if(verbose)
             {
                 dumpLog.WriteLine("Output image format: {0} ({1}).", outputFormat.Name, outputFormat.Id);
                 DicConsole.VerboseWriteLine("Output image format: {0} ({1}).", outputFormat.Name, outputFormat.Id);
@@ -207,33 +240,33 @@ namespace DiscImageChef.Commands
             switch(dev.Type)
             {
                 case DeviceType.ATA:
-                    Ata.Dump(dev, options.DevicePath, outputFormat, options.RetryPasses, options.Force,
-                             false, /*options.Raw,*/
-                             options.Persistent, options.StopOnError, ref resume, ref dumpLog, encoding, outputPrefix,
-                             options.OutputFile, parsedOptions, sidecar, (uint)options.Skip, options.NoMetadata,
-                             options.NoTrim);
+                    Ata.Dump(dev, DevicePath, outputFormat, RetryPasses, Force,
+                             false, /*Raw,*/
+                             Persistent, StopOnError, ref resume, ref dumpLog, encoding, outputPrefix,
+                             OutputFile, parsedOptions, sidecar, (uint)Skip, NoMetadata,
+                             NoTrim);
                     break;
                 case DeviceType.MMC:
                 case DeviceType.SecureDigital:
-                    SecureDigital.Dump(dev, options.DevicePath, outputFormat, options.RetryPasses, options.Force,
-                                       false, /*options.Raw,*/ options.Persistent, options.StopOnError, ref resume,
-                                       ref dumpLog, encoding, outputPrefix, options.OutputFile, parsedOptions, sidecar,
-                                       (uint)options.Skip, options.NoMetadata, options.NoTrim);
+                    SecureDigital.Dump(dev, DevicePath, outputFormat, RetryPasses, Force,
+                                       false, /*Raw,*/ Persistent, StopOnError, ref resume,
+                                       ref dumpLog, encoding, outputPrefix, OutputFile, parsedOptions, sidecar,
+                                       (uint)Skip, NoMetadata, NoTrim);
                     break;
                 case DeviceType.NVMe:
-                    NvMe.Dump(dev, options.DevicePath, outputFormat, options.RetryPasses, options.Force,
-                              false, /*options.Raw,*/
-                              options.Persistent, options.StopOnError, ref resume, ref dumpLog, encoding, outputPrefix,
-                              options.OutputFile, parsedOptions, sidecar, (uint)options.Skip, options.NoMetadata,
-                              options.NoTrim);
+                    NvMe.Dump(dev, DevicePath, outputFormat, RetryPasses, Force,
+                              false, /*Raw,*/
+                              Persistent, StopOnError, ref resume, ref dumpLog, encoding, outputPrefix,
+                              OutputFile, parsedOptions, sidecar, (uint)Skip, NoMetadata,
+                              NoTrim);
                     break;
                 case DeviceType.ATAPI:
                 case DeviceType.SCSI:
-                    Scsi.Dump(dev, options.DevicePath, outputFormat, options.RetryPasses, options.Force,
-                              false, /*options.Raw,*/
-                              options.Persistent, options.StopOnError, ref resume, ref dumpLog, options.LeadIn,
-                              encoding, outputPrefix, options.OutputFile, parsedOptions, sidecar, (uint)options.Skip,
-                              options.NoMetadata, options.NoTrim);
+                    Scsi.Dump(dev, DevicePath, outputFormat, RetryPasses, Force,
+                              false, /*Raw,*/
+                              Persistent, StopOnError, ref resume, ref dumpLog, LeadIn,
+                              encoding, outputPrefix, OutputFile, parsedOptions, sidecar, (uint)Skip,
+                              NoMetadata, NoTrim);
                     break;
                 default:
                     dumpLog.WriteLine("Unknown device type.");
@@ -241,7 +274,7 @@ namespace DiscImageChef.Commands
                     throw new NotSupportedException("Unknown device type.");
             }
 
-            if(resume != null && options.Resume)
+            if(resume != null && Resume)
             {
                 resume.LastWriteDate = DateTime.UtcNow;
                 resume.BadBlocks.Sort();

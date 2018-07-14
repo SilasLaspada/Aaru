@@ -16,7 +16,6 @@
           <e p="Analyze.cs" t="Include" />
           <e p="Benchmark.cs" t="Include" />
           <e p="Checksum.cs" t="Include" />
-          <e p="Commands.cs" t="Include" />
           <e p="Compare.cs" t="Include" />
           <e p="Configure.cs" t="Include" />
           <e p="ConvertImage.cs" t="Include" />
@@ -39,16 +38,8 @@
           <e p="Statistics.cs" t="Include" />
           <e p="Verify.cs" t="Include" />
         </e>
-        <e p="Controllers" t="Include">
-          <e p="About.cs" t="Include" />
-          <e p="Device.cs" t="Include" />
-          <e p="Filesystem.cs" t="Include" />
-          <e p="Image.cs" t="Include" />
-          <e p="Media.cs" t="Include" />
-        </e>
         <e p="DiscImageChef.csproj" t="IncludeRecursive" />
         <e p="Main.cs" t="Include" />
-        <e p="Options.cs" t="Include" />
         <e p="Progress.cs" t="Include" />
         <e p="Settings.StyleCop" t="Include" />
         <e p="StyleCop.Cache" t="Include" />

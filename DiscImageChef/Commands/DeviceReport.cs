@@ -33,6 +33,7 @@
 using System;
 using System.IO;
 using System.Xml.Serialization;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
 using DiscImageChef.Core.Devices.Report;
@@ -41,19 +42,23 @@ using DiscImageChef.Devices;
 
 namespace DiscImageChef.Commands
 {
-    static class DeviceReport
+    public static partial class Device
     {
-        internal static void DoDeviceReport(DeviceReportOptions options)
+        [CliCommand("report", "Tests the device capabilities and creates an XML report of them.")]
+        public static void Info([CliParameter(                    'i', "Device path.")] string DevicePath,
+                                [CliParameter(                    'd', "Shows debug output from plugins.")]
+                                bool debug = false, [CliParameter('v', "Shows verbose output.")]
+                                bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Device-Report command", "--debug={0}",   options.Debug);
-            DicConsole.DebugWriteLine("Device-Report command", "--verbose={0}", options.Verbose);
-            DicConsole.DebugWriteLine("Device-Report command", "--device={0}",  options.DevicePath);
+            DicConsole.DebugWriteLine("Device-Report command", "--debug={0}",   debug);
+            DicConsole.DebugWriteLine("Device-Report command", "--verbose={0}", verbose);
+            DicConsole.DebugWriteLine("Device-Report command", "--device={0}",  DevicePath);
 
-            if(options.DevicePath.Length == 2 && options.DevicePath[1] == ':' && options.DevicePath[0] != '/' &&
-               char.IsLetter(options.DevicePath[0]))
-                options.DevicePath = "\\\\.\\" + char.ToUpper(options.DevicePath[0]) + ':';
+            if(DevicePath.Length == 2 && DevicePath[1] == ':' && DevicePath[0] != '/' &&
+               char.IsLetter(DevicePath[0]))
+                DevicePath = "\\\\.\\" + char.ToUpper(DevicePath[0]) + ':';
 
-            Device dev = new Device(options.DevicePath);
+            DiscImageChef.Devices.Device dev = new DiscImageChef.Devices.Device(DevicePath);
 
             if(dev.Error)
             {
@@ -82,18 +87,18 @@ namespace DiscImageChef.Commands
             switch(dev.Type)
             {
                 case DeviceType.ATA:
-                    Ata.Report(dev, ref report, options.Debug, ref removable);
+                    Ata.Report(dev, ref report, debug, ref removable);
                     break;
                 case DeviceType.MMC:
                 case DeviceType.SecureDigital:
                     SecureDigital.Report(dev, ref report);
                     break;
                 case DeviceType.NVMe:
-                    Nvme.Report(dev, ref report, options.Debug, ref removable);
+                    Nvme.Report(dev, ref report, debug, ref removable);
                     break;
                 case DeviceType.ATAPI:
                 case DeviceType.SCSI:
-                    General.Report(dev, ref report, options.Debug, ref removable);
+                    General.Report(dev, ref report, debug, ref removable);
                     break;
                 default: throw new NotSupportedException("Unknown device type.");
             }

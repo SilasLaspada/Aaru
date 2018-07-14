@@ -33,6 +33,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
@@ -52,20 +53,26 @@ using Spare = DiscImageChef.Decoders.DVD.Spare;
 
 namespace DiscImageChef.Commands
 {
-    static class MediaInfo
+    public static partial class Media
     {
-        internal static void DoMediaInfo(MediaInfoOptions options)
+        [CliCommand("info", "Gets information about the media inserted on a device.")]
+        public static void Info([CliParameter('i', "Device path.")] string DevicePath,
+                                [CliParameter('w',
+                                    "Write binary responses from device with that prefix.")]
+                                string OutputPrefix = null, [CliParameter('d', "Shows debug output from plugins.")]
+                                bool debug = false,         [CliParameter('v', "Shows verbose output.")]
+                                bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Media-Info command", "--debug={0}",         options.Debug);
-            DicConsole.DebugWriteLine("Media-Info command", "--verbose={0}",       options.Verbose);
-            DicConsole.DebugWriteLine("Media-Info command", "--device={0}",        options.DevicePath);
-            DicConsole.DebugWriteLine("Media-Info command", "--output-prefix={0}", options.OutputPrefix);
+            DicConsole.DebugWriteLine("Media-Info command", "--debug={0}",         debug);
+            DicConsole.DebugWriteLine("Media-Info command", "--verbose={0}",       verbose);
+            DicConsole.DebugWriteLine("Media-Info command", "--device={0}",        DevicePath);
+            DicConsole.DebugWriteLine("Media-Info command", "--output-prefix={0}", OutputPrefix);
 
-            if(options.DevicePath.Length == 2 && options.DevicePath[1] == ':' && options.DevicePath[0] != '/' &&
-               char.IsLetter(options.DevicePath[0]))
-                options.DevicePath = "\\\\.\\" + char.ToUpper(options.DevicePath[0]) + ':';
+            if(DevicePath.Length == 2 && DevicePath[1] == ':' && DevicePath[0] != '/' &&
+               char.IsLetter(DevicePath[0]))
+                DevicePath = "\\\\.\\" + char.ToUpper(DevicePath[0]) + ':';
 
-            Device dev = new Device(options.DevicePath);
+            DiscImageChef.Devices.Device dev = new DiscImageChef.Devices.Device(DevicePath);
 
             if(dev.Error)
             {
@@ -85,11 +92,11 @@ namespace DiscImageChef.Commands
                     DoSdMediaInfo();
                     break;
                 case DeviceType.NVMe:
-                    DoNvmeMediaInfo(options.OutputPrefix, dev);
+                    DoNvmeMediaInfo(OutputPrefix, dev);
                     break;
                 case DeviceType.ATAPI:
                 case DeviceType.SCSI:
-                    DoScsiMediaInfo(options.OutputPrefix, dev);
+                    DoScsiMediaInfo(OutputPrefix, dev);
                     break;
                 default: throw new NotSupportedException("Unknown device type.");
             }
@@ -102,7 +109,7 @@ namespace DiscImageChef.Commands
             DicConsole.ErrorWriteLine("Please use device-info command for ATA devices.");
         }
 
-        static void DoNvmeMediaInfo(string outputPrefix, Device dev)
+        static void DoNvmeMediaInfo(string outputPrefix, DiscImageChef.Devices.Device dev)
         {
             throw new NotImplementedException("NVMe devices not yet supported.");
         }
@@ -112,7 +119,7 @@ namespace DiscImageChef.Commands
             DicConsole.ErrorWriteLine("Please use device-info command for MMC/SD devices.");
         }
 
-        static void DoScsiMediaInfo(string outputPrefix, Device dev)
+        static void DoScsiMediaInfo(string outputPrefix, DiscImageChef.Devices.Device dev)
         {
             byte[]    cmdBuf;
             byte[]    senseBuf;

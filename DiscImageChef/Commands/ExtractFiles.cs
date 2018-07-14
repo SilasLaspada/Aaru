@@ -34,34 +34,47 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.CommonTypes.Interfaces;
 using DiscImageChef.CommonTypes.Structs;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
-using DiscImageChef.Filters;
 
 namespace DiscImageChef.Commands
 {
     // TODO: Rewrite this, has an insane amount of repeating code ;)
-    static class ExtractFiles
+    [CliController("filesystem", "Handles filesystem contents")]
+    public static partial class Filesystem
     {
-        internal static void DoExtractFiles(ExtractFilesOptions options)
+        [CliCommand("extract-files", "Extracts all files in disc image.")]
+        public static void Extract([CliParameter('i', "Disc image.")] string InputFile,
+                                   [CliParameter('o',
+                                       "Directory where extracted files will be created. Will abort if it exists.")]
+                                   string OutputDir,
+                                   [CliParameter(                            'x', "Extract extended attributes if present.")]
+                                   bool Xattrs = false,        [CliParameter('e', "Name of character encoding to use.")]
+                                   string EncodingName = null, [CliParameter('O',
+                                       "Comma separated name=value pairs of options to pass to filesystem plugin")]
+                                   string Options = null, [CliParameter('d', "Shows debug output from plugins.")]
+                                   bool debug = false,    [CliParameter('v', "Shows verbose output.")]
+                                   bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Extract-Files command", "--debug={0}",   options.Debug);
-            DicConsole.DebugWriteLine("Extract-Files command", "--verbose={0}", options.Verbose);
-            DicConsole.DebugWriteLine("Extract-Files command", "--input={0}",   options.InputFile);
-            DicConsole.DebugWriteLine("Extract-Files command", "--xattrs={0}",  options.Xattrs);
-            DicConsole.DebugWriteLine("Extract-Files command", "--output={0}",  options.OutputDir);
+            DicConsole.DebugWriteLine("Extract-Files command", "--debug={0}",   debug);
+            DicConsole.DebugWriteLine("Extract-Files command", "--verbose={0}", verbose);
+            DicConsole.DebugWriteLine("Extract-Files command", "--input={0}",   InputFile);
+            DicConsole.DebugWriteLine("Extract-Files command", "--xattrs={0}",  Xattrs);
+            DicConsole.DebugWriteLine("Extract-Files command", "--output={0}",  OutputDir);
+            DicConsole.DebugWriteLine("Extract-Files command", "--encoding={0}", EncodingName);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(options.InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(InputFile);
 
-            Dictionary<string, string> parsedOptions = Options.Parse(options.Options);
+            Dictionary<string, string> parsedOptions = DiscImageChef.Core.Options.Parse(Options);
             DicConsole.DebugWriteLine("Extract-Files command", "Parsed options:");
             foreach(KeyValuePair<string, string> parsedOption in parsedOptions)
                 DicConsole.DebugWriteLine("Extract-Files command", "{0} = {1}", parsedOption.Key, parsedOption.Value);
-            parsedOptions.Add("debug", options.Debug.ToString());
+            parsedOptions.Add("debug", debug.ToString());
 
             if(inputFilter == null)
             {
@@ -71,11 +84,11 @@ namespace DiscImageChef.Commands
 
             Encoding encoding = null;
 
-            if(options.EncodingName != null)
+            if(EncodingName != null)
                 try
                 {
-                    encoding = Claunia.Encoding.Encoding.GetEncoding(options.EncodingName);
-                    if(options.Verbose) DicConsole.VerboseWriteLine("Using encoding for {0}.", encoding.EncodingName);
+                    encoding = Claunia.Encoding.Encoding.GetEncoding(EncodingName);
+                    if(verbose) DicConsole.VerboseWriteLine("Using encoding for {0}.", encoding.EncodingName);
                 }
                 catch(ArgumentException)
                 {
@@ -95,18 +108,18 @@ namespace DiscImageChef.Commands
                     return;
                 }
 
-                if(options.Verbose)
+                if(verbose)
                     DicConsole.VerboseWriteLine("Image format identified by {0} ({1}).", imageFormat.Name,
                                                 imageFormat.Id);
                 else DicConsole.WriteLine("Image format identified by {0}.", imageFormat.Name);
 
-                if(Directory.Exists(options.OutputDir) || File.Exists(options.OutputDir))
+                if(Directory.Exists(OutputDir) || File.Exists(OutputDir))
                 {
                     DicConsole.ErrorWriteLine("Destination exists, aborting.");
                     return;
                 }
 
-                Directory.CreateDirectory(options.OutputDir);
+                Directory.CreateDirectory(OutputDir);
 
                 try
                 {
@@ -186,7 +199,7 @@ namespace DiscImageChef.Commands
                                                 {
                                                     string     outputPath;
                                                     FileStream outputFile;
-                                                    if(options.Xattrs)
+                                                    if(Xattrs)
                                                     {
                                                         error = fs.ListXAttr(entry, out List<string> xattrs);
                                                         if(error == Errno.NoError)
@@ -197,13 +210,13 @@ namespace DiscImageChef.Commands
                                                                 if(error != Errno.NoError) continue;
 
                                                                 Directory
-                                                                   .CreateDirectory(Path.Combine(options.OutputDir,
+                                                                   .CreateDirectory(Path.Combine(OutputDir,
                                                                                                  fs.XmlFsType.Type,
                                                                                                  volumeName, ".xattrs",
                                                                                                  xattr));
 
                                                                 outputPath =
-                                                                    Path.Combine(options.OutputDir, fs.XmlFsType.Type,
+                                                                    Path.Combine(OutputDir, fs.XmlFsType.Type,
                                                                                  volumeName, ".xattrs", xattr, entry);
 
                                                                 if(!File.Exists(outputPath))
@@ -246,12 +259,12 @@ namespace DiscImageChef.Commands
                                                             }
                                                     }
 
-                                                    Directory.CreateDirectory(Path.Combine(options.OutputDir,
+                                                    Directory.CreateDirectory(Path.Combine(OutputDir,
                                                                                            fs.XmlFsType.Type,
                                                                                            volumeName));
 
                                                     outputPath =
-                                                        Path.Combine(options.OutputDir, fs.XmlFsType.Type, volumeName,
+                                                        Path.Combine(OutputDir, fs.XmlFsType.Type, volumeName,
                                                                      entry);
 
                                                     if(!File.Exists(outputPath))
@@ -336,7 +349,7 @@ namespace DiscImageChef.Commands
                                         {
                                             FileStream outputFile;
                                             string     outputPath;
-                                            if(options.Xattrs)
+                                            if(Xattrs)
                                             {
                                                 error = fs.ListXAttr(entry, out List<string> xattrs);
                                                 if(error == Errno.NoError)
@@ -346,13 +359,13 @@ namespace DiscImageChef.Commands
                                                         error = fs.GetXattr(entry, xattr, ref xattrBuf);
                                                         if(error != Errno.NoError) continue;
 
-                                                        Directory.CreateDirectory(Path.Combine(options.OutputDir,
+                                                        Directory.CreateDirectory(Path.Combine(OutputDir,
                                                                                                fs.XmlFsType.Type,
                                                                                                volumeName, ".xattrs",
                                                                                                xattr));
 
                                                         outputPath =
-                                                            Path.Combine(options.OutputDir, fs.XmlFsType.Type,
+                                                            Path.Combine(OutputDir, fs.XmlFsType.Type,
                                                                          volumeName, ".xattrs", xattr, entry);
 
                                                         if(!File.Exists(outputPath))
@@ -393,11 +406,11 @@ namespace DiscImageChef.Commands
                                                     }
                                             }
 
-                                            Directory.CreateDirectory(Path.Combine(options.OutputDir, fs.XmlFsType.Type,
+                                            Directory.CreateDirectory(Path.Combine(OutputDir, fs.XmlFsType.Type,
                                                                                    volumeName));
 
                                             outputPath =
-                                                Path.Combine(options.OutputDir, fs.XmlFsType.Type, volumeName, entry);
+                                                Path.Combine(OutputDir, fs.XmlFsType.Type, volumeName, entry);
 
                                             if(!File.Exists(outputPath))
                                             {
@@ -492,7 +505,7 @@ namespace DiscImageChef.Commands
                                         {
                                             FileStream outputFile;
                                             string     outputPath;
-                                            if(options.Xattrs)
+                                            if(Xattrs)
                                             {
                                                 error = fs.ListXAttr(entry, out List<string> xattrs);
                                                 if(error == Errno.NoError)
@@ -502,13 +515,13 @@ namespace DiscImageChef.Commands
                                                         error = fs.GetXattr(entry, xattr, ref xattrBuf);
                                                         if(error != Errno.NoError) continue;
 
-                                                        Directory.CreateDirectory(Path.Combine(options.OutputDir,
+                                                        Directory.CreateDirectory(Path.Combine(OutputDir,
                                                                                                fs.XmlFsType.Type,
                                                                                                volumeName, ".xattrs",
                                                                                                xattr));
 
                                                         outputPath =
-                                                            Path.Combine(options.OutputDir, fs.XmlFsType.Type,
+                                                            Path.Combine(OutputDir, fs.XmlFsType.Type,
                                                                          volumeName, ".xattrs", xattr, entry);
 
                                                         if(!File.Exists(outputPath))
@@ -549,11 +562,11 @@ namespace DiscImageChef.Commands
                                                     }
                                             }
 
-                                            Directory.CreateDirectory(Path.Combine(options.OutputDir, fs.XmlFsType.Type,
+                                            Directory.CreateDirectory(Path.Combine(OutputDir, fs.XmlFsType.Type,
                                                                                    volumeName));
 
                                             outputPath =
-                                                Path.Combine(options.OutputDir, fs.XmlFsType.Type, volumeName, entry);
+                                                Path.Combine(OutputDir, fs.XmlFsType.Type, volumeName, entry);
 
                                             if(!File.Exists(outputPath))
                                             {
@@ -631,7 +644,7 @@ namespace DiscImageChef.Commands
                                 {
                                     string     outputPath;
                                     FileStream outputFile;
-                                    if(options.Xattrs)
+                                    if(Xattrs)
                                     {
                                         error = fs.ListXAttr(entry, out List<string> xattrs);
                                         if(error == Errno.NoError)
@@ -641,12 +654,12 @@ namespace DiscImageChef.Commands
                                                 error = fs.GetXattr(entry, xattr, ref xattrBuf);
                                                 if(error != Errno.NoError) continue;
 
-                                                Directory.CreateDirectory(Path.Combine(options.OutputDir,
+                                                Directory.CreateDirectory(Path.Combine(OutputDir,
                                                                                        fs.XmlFsType.Type, volumeName,
                                                                                        ".xattrs", xattr));
 
                                                 outputPath =
-                                                    Path.Combine(options.OutputDir, fs.XmlFsType.Type, volumeName,
+                                                    Path.Combine(OutputDir, fs.XmlFsType.Type, volumeName,
                                                                  ".xattrs", xattr, entry);
 
                                                 if(!File.Exists(outputPath))
@@ -687,10 +700,10 @@ namespace DiscImageChef.Commands
                                             }
                                     }
 
-                                    Directory.CreateDirectory(Path.Combine(options.OutputDir, fs.XmlFsType.Type,
+                                    Directory.CreateDirectory(Path.Combine(OutputDir, fs.XmlFsType.Type,
                                                                            volumeName));
 
-                                    outputPath = Path.Combine(options.OutputDir, fs.XmlFsType.Type, volumeName, entry);
+                                    outputPath = Path.Combine(OutputDir, fs.XmlFsType.Type, volumeName, entry);
 
                                     if(!File.Exists(outputPath))
                                     {

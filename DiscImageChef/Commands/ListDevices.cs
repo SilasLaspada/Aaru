@@ -31,19 +31,23 @@
 // ****************************************************************************/
 
 using System.Linq;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.Console;
 using DiscImageChef.Devices;
 
 namespace DiscImageChef.Commands
 {
-    static class ListDevices
+    public static partial class Device
     {
-        internal static void DoListDevices(ListDevicesOptions options)
+        [CliCommand("list", "Lists all connected devices.")]
+        public static void List([CliParameter(                    'd', "Shows debug output from plugins.")]
+                                bool debug = false, [CliParameter('v', "Shows verbose output.")]
+                                bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Media-Info command", "--debug={0}",   options.Debug);
-            DicConsole.DebugWriteLine("Media-Info command", "--verbose={0}", options.Verbose);
+            DicConsole.DebugWriteLine("Media-Info command", "--debug={0}",   debug);
+            DicConsole.DebugWriteLine("Media-Info command", "--verbose={0}", verbose);
 
-            Devices.DeviceInfo[] devices = Device.ListDevices();
+            Devices.DeviceInfo[] devices = DiscImageChef.Devices.Device.ListDevices();
 
             if(devices == null || devices.Length == 0) DicConsole.WriteLine("No known devices attached.");
             else

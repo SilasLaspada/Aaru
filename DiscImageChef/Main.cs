@@ -51,7 +51,7 @@ namespace DiscImageChef
             PrintCopyright();
 
             Settings.Settings.LoadSettings();
-            if(Settings.Settings.Current.GdprCompliance < DicSettings.GdprLevel) Configure.DoConfigure(true);
+            if(Settings.Settings.Current.GdprCompliance < DicSettings.GdprLevel) About.DoConfigure(true);
             Statistics.LoadStats();
             if(Settings.Settings.Current.Stats != null && Settings.Settings.Current.Stats.ShareStats)
                 Statistics.SubmitStats();

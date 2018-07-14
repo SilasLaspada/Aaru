@@ -33,31 +33,39 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CommandAndConquer.CLI.Attributes;
 using DiscImageChef.CommonTypes;
 using DiscImageChef.CommonTypes.Interfaces;
 using DiscImageChef.CommonTypes.Structs;
 using DiscImageChef.Console;
 using DiscImageChef.Core;
-using DiscImageChef.Filters;
 
 namespace DiscImageChef.Commands
 {
-    static class Ls
+    public static partial class Filesystem
     {
-        internal static void DoLs(LsOptions options)
+        [CliCommand("list", "Lists files in disc image.")]
+        public static void List([CliParameter(                            'i', "Disc image.")] string InputFile,
+                                [CliParameter(                            'l', "Uses long format.")]
+                                bool Long = false,          [CliParameter('e', "Name of character encoding to use.")]
+                                string EncodingName = null, [CliParameter('O',
+                                    "Comma separated name=value pairs of options to pass to filesystem plugin")]
+                                string Options = null, [CliParameter('d', "Shows debug output from plugins.")]
+                                bool debug = false,    [CliParameter('v', "Shows verbose output.")]
+                                bool verbose = false)
         {
-            DicConsole.DebugWriteLine("Ls command", "--debug={0}",   options.Debug);
-            DicConsole.DebugWriteLine("Ls command", "--verbose={0}", options.Verbose);
-            DicConsole.DebugWriteLine("Ls command", "--input={0}",   options.InputFile);
+            DicConsole.DebugWriteLine("Ls command", "--debug={0}",   debug);
+            DicConsole.DebugWriteLine("Ls command", "--verbose={0}", verbose);
+            DicConsole.DebugWriteLine("Ls command", "--input={0}",   InputFile);
 
             FiltersList filtersList = new FiltersList();
-            IFilter     inputFilter = filtersList.GetFilter(options.InputFile);
+            IFilter     inputFilter = filtersList.GetFilter(InputFile);
 
-            Dictionary<string, string> parsedOptions = Options.Parse(options.Options);
+            Dictionary<string, string> parsedOptions = DiscImageChef.Core.Options.Parse(Options);
             DicConsole.DebugWriteLine("Ls command", "Parsed options:");
             foreach(KeyValuePair<string, string> parsedOption in parsedOptions)
                 DicConsole.DebugWriteLine("Ls command", "{0} = {1}", parsedOption.Key, parsedOption.Value);
-            parsedOptions.Add("debug", options.Debug.ToString());
+            parsedOptions.Add("debug", debug.ToString());
 
             if(inputFilter == null)
             {
@@ -67,11 +75,11 @@ namespace DiscImageChef.Commands
 
             Encoding encoding = null;
 
-            if(options.EncodingName != null)
+            if(EncodingName != null)
                 try
                 {
-                    encoding = Claunia.Encoding.Encoding.GetEncoding(options.EncodingName);
-                    if(options.Verbose) DicConsole.VerboseWriteLine("Using encoding for {0}.", encoding.EncodingName);
+                    encoding = Claunia.Encoding.Encoding.GetEncoding(EncodingName);
+                    if(verbose) DicConsole.VerboseWriteLine("Using encoding for {0}.", encoding.EncodingName);
                 }
                 catch(ArgumentException)
                 {
@@ -91,7 +99,7 @@ namespace DiscImageChef.Commands
                     return;
                 }
 
-                if(options.Verbose)
+                if(verbose)
                     DicConsole.VerboseWriteLine("Image format identified by {0} ({1}).", imageFormat.Name,
                                                 imageFormat.Id);
                 else DicConsole.WriteLine("Image format identified by {0}.", imageFormat.Name);
@@ -258,7 +266,7 @@ namespace DiscImageChef.Commands
                                 error = fs.ReadDir("/", out List<string> rootDir);
                                 if(error == Errno.NoError)
                                     foreach(string entry in rootDir)
-                                        if(options.Long)
+                                        if(Long)
                                         {
                                             error = fs.Stat(entry, out FileEntryInfo stat);
                                             if(error == Errno.NoError)
