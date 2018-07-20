@@ -1,3 +1,12 @@
+# [4.5.1.1692] - 2018-07-19
+## Fixed
+### - Alcohol 120% disc image
+- Correct writing images of Compact Disc >= 60 min
+- Correct writing MODE2 tracks to image
+- Correct writing TOC to image
+- Generation of multisession images
+- Generation of pregaps changing tracks
+
 # [4.5.0.1663] - 2018-06-24
 ## Added
 ### - Alcohol 120% disc image
@@ -838,6 +847,7 @@
 - Master Boot Record (aka MBR).
 - NeXT disklabels.
 
+[4.5.1.1692]: https://github.com/claunia/DiscImageChef/releases/tag/v4.5.1.1692
 [4.5.0.1663]: https://github.com/claunia/DiscImageChef/releases/tag/v4.5.0.1663
 [4.0.1.0]: https://github.com/claunia/DiscImageChef/releases/tag/v4.0.1.0
 [4.0.0.0]: https://github.com/claunia/DiscImageChef/releases/tag/v4.0.0.0
